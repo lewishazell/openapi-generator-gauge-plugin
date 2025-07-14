@@ -23,6 +23,7 @@ using {{packageName}}.{{apiPackage}};
 using {{packageName}}.{{modelPackage}};
 {{/hasImport}}
 using DataTable = Gherkin.Ast.DataTable;
+using DocString = Gherkin.Ast.DocString;
 
 namespace {{packageName}}.Test.Api
 {
@@ -73,7 +74,7 @@ namespace {{packageName}}.Test.Api
 
         [Given(@"the request has a parameter ""(.+)"" with a value of ""(.+)""")]
         [And(@"the request has a parameter ""(.+)"" with a value of ""(.+)""")]
-        public void Given_Request_Has_Parameter_With_Value(string parameter, string value)
+        public void Given_Request_Has_A_Parameter_With_A_Value_Of(string parameter, string value)
         {
             {{#operations}}
             {{#operation}}
@@ -92,9 +93,35 @@ namespace {{packageName}}.Test.Api
             {{/operations}}
         }
 
+        [Given(@"the request has a parameter ""(.+)"" with a value of:")]
+        [And(@"the request has a parameter ""(.+)"" with a value of:")]
+        public void Given_Request_Has_A_Parameter_With_A_Value_Of(string parameter, DocString docString)
+        {
+            if (docString.ContentType != "json")
+            {
+                throw new FormatException("DocString must have a ContentType of \"json\"");
+            }
+
+            {{#operations}}
+            {{#operation}}
+            if (request is {{operationId}}Request {{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}Request)
+            {
+                {{#allParams}}
+                if (parameter == "{{paramName}}")
+                {
+                    {{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}Request.{{paramName}}Parameter = JsonConvert.DeserializeObject<{{{dataType}}}>(docString.Content);
+                }
+
+                {{/allParams}}
+            }
+            
+            {{/operation}}
+            {{/operations}}
+        }
+
         [Given(@"the request has a parameter ""(.+)"" containing:")]
         [And(@"the request has a parameter ""(.+)"" containing:")]
-        public void Given_Request_Has_Parameter_With_Values(string parameter, DataTable dataTable)
+        public void Given_Request_Has_A_Parameter_Containing(string parameter, DataTable dataTable)
         {
             {{#operations}}
             {{#operation}}
