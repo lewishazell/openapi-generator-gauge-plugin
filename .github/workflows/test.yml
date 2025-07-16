@@ -1,0 +1,38 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+    pull_request:
+
+jobs:
+  csharp:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Install tools
+        run: npm install -g @stoplight/prism-cli @openapitools/openapi-generator-cli
+
+      - name: Generate csharp source
+        run: |
+          openapi-generator-cli generate -t templates/csharp -g csharp --package-name PetStore -i tests/petstore-extended.yaml -o out/csharp
+          cp tests/*.feature out/csharp/src/PetStore.Test
+
+      - name: Start Prism server
+        run: prism mock tests/petstore-extended.yaml & sleep 15
+
+      - name: Run test
+        run: dotnet test
+        working-directory: out/csharp
+
+      - name: Stop Prism server
+        if: success() || failure()
+        run: pkill -f prism
