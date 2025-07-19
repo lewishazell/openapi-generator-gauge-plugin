@@ -39,7 +39,8 @@ namespace {{packageName}}.Test.Api
     {
         {{^nonPublicApi}}
         private readonly {{classname}} instance;
-        private IRequest request;
+        private Request request;
+        private IApiResponse response;
 
         {{/nonPublicApi}}
         public {{classname}}Tests()
@@ -61,15 +62,7 @@ namespace {{packageName}}.Test.Api
         [And(@"there is an? ""(.+)"" request")]
         public void Given_There_Is_A_Request(string operationId)
         {
-            {{#operations}}
-            {{#operation}}
-            if (operationId == "{{operationId}}")
-            {
-                request = new {{operationId}}Request(instance);
-            }
-            
-            {{/operation}}
-            {{/operations}}
+            request = new Request(operationId);
         }
 
         [Given(@"the request has a parameter ""(.+)"" with a value of ""(.+)""")]
@@ -78,17 +71,21 @@ namespace {{packageName}}.Test.Api
         {
             {{#operations}}
             {{#operation}}
-            if (request is {{operationId}}Request {{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}Request)
+            if (request.OperationId == "{{operationId}}")
             {
                 {{#allParams}}
                 if (parameter == "{{paramName}}")
                 {
-                    {{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}Request.{{paramName}}Parameter = Converter.ConvertTo<{{{dataType}}}>(value);
+                    request.Parameters.Set("{{paramName}}", Converter.ConvertTo<{{{dataType}}}>(value));
                 }
+                {{^-last}}
 
+                {{/-last}}
                 {{/allParams}}
             }
-            
+            {{^-last}}
+
+            {{/-last}}
             {{/operation}}
             {{/operations}}
         }
@@ -99,22 +96,26 @@ namespace {{packageName}}.Test.Api
         {
             if (docString.ContentType != "json")
             {
-                throw new FormatException("DocString must have a ContentType of \"json\"");
+                throw new FormatException("DocString ContentType must be \"json\"");
             }
 
             {{#operations}}
             {{#operation}}
-            if (request is {{operationId}}Request {{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}Request)
+            if (request.OperationId == "{{operationId}}")
             {
                 {{#allParams}}
                 if (parameter == "{{paramName}}")
                 {
-                    {{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}Request.{{paramName}}Parameter = JsonConvert.DeserializeObject<{{{dataType}}}>(docString.Content);
+                    request.Parameters.Set("{{paramName}}", JsonConvert.DeserializeObject<{{{dataType}}}>(docString.Content));
                 }
+                {{^-last}}
 
+                {{/-last}}
                 {{/allParams}}
             }
-            
+            {{^-last}}
+
+            {{/-last}}
             {{/operation}}
             {{/operations}}
         }
@@ -125,17 +126,21 @@ namespace {{packageName}}.Test.Api
         {
             {{#operations}}
             {{#operation}}
-            if (request is {{operationId}}Request {{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}Request)
+            if (request.OperationId == "{{operationId}}")
             {
                 {{#allParams}}
                 if (parameter == "{{paramName}}")
                 {
-                    {{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}Request.{{paramName}}Parameter = Converter.ConvertTo<{{{dataType}}}>(dataTable);
+                    request.Parameters.Set("{{paramName}}", Converter.ConvertTo<{{{dataType}}}>(dataTable));
                 }
+                {{^-last}}
 
+                {{/-last}}
                 {{/allParams}}
             }
-            
+            {{^-last}}
+
+            {{/-last}}
             {{/operation}}
             {{/operations}}
         }
@@ -144,13 +149,49 @@ namespace {{packageName}}.Test.Api
         [And("the request is sent")]
         public async Task When_The_Request_Is_Sent()
         {
-            await request.SendAsync();
+            {{#operations}}
+            {{#operation}}
+            if (request.OperationId == "{{operationId}}")
+            {
+                response = await instance.{{operationId}}WithHttpInfoAsync({{#allParams}}request.Parameters.GetOrDefault<{{{dataType}}}>("{{paramName}}"){{^-last}}, {{/-last}}{{/allParams}});
+            }
+            {{^-last}}
+
+            {{/-last}}
+            {{/operation}}
+            {{/operations}}
         }
 
         [Then("the response status is (.+)")]
         public void The_Response_Status_Is(int statusCode)
         {
-            Assert.Equal((HttpStatusCode)statusCode, request.Response.StatusCode);
+            Assert.Equal((HttpStatusCode)statusCode, response.StatusCode);
+        }
+
+        private class RequestParameters
+        {
+            private readonly Dictionary<string, object> values = new Dictionary<string, object>();
+
+            public void Set<T>(string name, T value)
+            {
+                values[name] = value;
+            }
+
+            public T GetOrDefault<T>(string name)
+            {
+                return values.TryGetValue(name, out object value) ? (T)value : default;
+            }
+        }
+
+        private class Request
+        {
+            public string OperationId { get; }
+            public RequestParameters Parameters { get; } = new RequestParameters();
+            
+            public Request(string operationId)
+            {
+                OperationId = operationId;
+            }
         }
 
         private static class Converter
@@ -239,38 +280,5 @@ namespace {{packageName}}.Test.Api
                 }
             }
         }
-
-        private interface IRequest
-        {
-            IApiResponse Response { get; }
-
-            public Task SendAsync();
-        }
-
-        {{#operations}}
-        {{#operation}}
-        private class {{operationId}}Request : IRequest
-        {
-            private readonly {{classname}} instance;
-
-            {{#allParams}}
-            public {{{dataType}}} {{paramName}}Parameter;
-            {{/allParams}}
-
-            public IApiResponse Response { get; private set; }
-
-            public {{operationId}}Request({{classname}} instance)
-            {
-                this.instance = instance;
-            }
-
-            public async Task SendAsync()
-            {
-                Response = await instance.{{operationId}}WithHttpInfoAsync({{#allParams}}{{paramName}}Parameter{{^-last}}, {{/-last}}{{/allParams}});
-            }
-        }
-
-        {{/operation}}
-        {{/operations}}
     }
 }
