@@ -4,7 +4,7 @@
 ![license](https://img.shields.io/github/license/lewishazell/openapi-generator-cucumber-templates?color=blue)
 
 ## 💡 Project Overview
-**OpenAPI Generator Cucumber Templates** is a collection of templates for [openapi-generator](https://openapi-generator.tech/) which implement Cucumber tests for generated clients and allow writing automated tests in Ghehrkin syntax. Because they're written in Gherkin syntax, they only need to be written once to test all generated clients.
+**OpenAPI Generator Cucumber Templates** is a collection of templates for [openapi-generator](https://openapi-generator.tech/) which run automated tests from Cucumber feature documents written in [Gherkin](https://cucumber.io/docs/gherkin/reference/). Because they're written in Gherkin, they can be run against all of your generated clients.
 
 ## 🎯 Requirements
 The templates must be used with [openapi-generator](https://openapi-generator.tech/docs/installation). Version **7.11.0** is currently recommended for use with these templates.
