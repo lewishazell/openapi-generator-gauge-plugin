@@ -1,6 +1,7 @@
 # OpenAPI Generator Cucumber Templates
 
-![test workflow](https://github.com/lewishazell/openapi-generator-cucumber-templates/actions/workflows/test.yml/badge.svg)
+![csharp tests](https://github.com/lewishazell/openapi-generator-cucumber-templates/actions/workflows/csharp-tests.yml/badge.svg)
+![python tests](https://github.com/lewishazell/openapi-generator-cucumber-templates/actions/workflows/python-tests.yml/badge.svg)
 ![license](https://img.shields.io/github/license/lewishazell/openapi-generator-cucumber-templates?color=blue)
 
 ## 💡 Project Overview

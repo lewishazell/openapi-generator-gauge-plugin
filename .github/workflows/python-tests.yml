@@ -1,0 +1,44 @@
+name: python-tests
+
+on:
+  push:
+    branches:
+      - main
+    pull_request:
+
+jobs:
+  generate-and-test:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install tools
+        run: npm install -g @stoplight/prism-cli @openapitools/openapi-generator-cli
+
+      - name: Generate python source
+        run: |
+          openapi-generator-cli generate -t templates/python -g python --package-name PetStore -i tests/petstore-extended.yaml -o out/python
+          cp tests/*.feature out/python/test
+
+      - name: Start Prism server
+        run: prism mock tests/petstore-extended.yaml & sleep 15
+
+      - name: Install test dependencies
+        run: |
+          pip install pytest
+          pip install -r requirements.txt -r test-requirements.txt
+        working-directory: out/python
+
+      - name: Run tests
+        run: pytest
+        working-directory: out/python
+
+      - name: Stop Prism server
+        if: success() || failure()
+        run: pkill -f prism
