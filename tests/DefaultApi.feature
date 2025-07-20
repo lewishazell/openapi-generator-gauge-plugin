@@ -24,6 +24,14 @@ Feature: PetStore API
         When the request is sent
         Then the response status is 200
 
+    Scenario: I request a list of all pets at the pet store with a matching tag with no limit
+        Given there is a "findPets" request
+        And the request has a parameter "tags" containing:
+            | cat |
+            | dog |
+        When the request is sent
+        Then the response status is 200
+
     Scenario: I request to add a pet to the pet store
         Given there is an "addPet" request
         And the request has a parameter "newPet" with a value of:
