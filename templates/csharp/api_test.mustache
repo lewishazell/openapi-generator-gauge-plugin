@@ -131,7 +131,18 @@ namespace {{packageName}}.Test.Api
                 {{#allParams}}
                 if (parameter == "{{paramName}}")
                 {
-                    request.Parameters.Set("{{paramName}}", Converter.ConvertTo<{{{dataType}}}>(dataTable));
+                    {{#isContainer}}
+                    {{{dataType}}} collection = new();
+                    foreach (var row in dataTable.Rows)
+                    {
+                        collection.Add(Converter.ConvertTo<{{{baseType}}}>(row.Cells.ElementAt(0).Value));
+                    }
+
+                    request.Parameters.Set("{{paramName}}", collection);
+                    {{/isContainer}}
+                    {{^isContainer}}
+                    throw new InvalidOperationException("Cannot read a DataTable into parameter {{#lambda.camelcase}}{{paramName}}{{/lambda.camelcase}} as it is not an array");
+                    {{/isContainer}}
                 }
                 {{^-last}}
 
@@ -217,37 +228,6 @@ namespace {{packageName}}.Test.Api
                 }
 
                 return (T)Convert.ChangeType(s, type);
-            }
-
-            public static T ConvertTo<T>(DataTable dataTable)
-            {
-                Type type = Nullable.GetUnderlyingType(typeof(T));
-                type ??= typeof(T);
-                T instance = Activator.CreateInstance<T>();
-
-                IList list = instance as IList;
-                if (list == null)
-                {
-                    throw new InvalidOperationException($"Attempted to read DataTable into an object of type {type.Name} which is not derived from IList");
-                }
-
-                Type elementType = type.GetGenericArguments()[0];
-                Reader reader = s_readers.FirstOrDefault(r => r.CanRead(elementType));
-                foreach (var row in dataTable.Rows)
-                {
-                    string value = row.Cells.ElementAt(0).Value;
-                    
-                    if (reader != null)
-                    {
-                        list.Add(reader.Read(elementType, value));
-                    }
-                    else
-                    {
-                        list.Add(Convert.ChangeType(value, elementType));
-                    }
-                }
-
-                return instance;
             }
 
             private class Reader
