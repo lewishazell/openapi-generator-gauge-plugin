@@ -71,7 +71,7 @@ namespace {{packageName}}.Test.Api
         {
             {{#operations}}
             {{#operation}}
-            if (request.OperationId == "{{operationId}}")
+            if (request.OperationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}")
             {
                 {{#allParams}}
                 if (parameter == "{{paramName}}")
@@ -101,7 +101,7 @@ namespace {{packageName}}.Test.Api
 
             {{#operations}}
             {{#operation}}
-            if (request.OperationId == "{{operationId}}")
+            if (request.OperationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}")
             {
                 {{#allParams}}
                 if (parameter == "{{paramName}}")
@@ -126,7 +126,7 @@ namespace {{packageName}}.Test.Api
         {
             {{#operations}}
             {{#operation}}
-            if (request.OperationId == "{{operationId}}")
+            if (request.OperationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}")
             {
                 {{#allParams}}
                 if (parameter == "{{paramName}}")
@@ -151,7 +151,7 @@ namespace {{packageName}}.Test.Api
         {
             {{#operations}}
             {{#operation}}
-            if (request.OperationId == "{{operationId}}")
+            if (request.OperationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}")
             {
                 response = await instance.{{operationId}}WithHttpInfoAsync({{#allParams}}request.Parameters.GetOrDefault<{{{dataType}}}>("{{paramName}}"){{^-last}}, {{/-last}}{{/allParams}});
             }
