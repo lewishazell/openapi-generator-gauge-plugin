@@ -67,7 +67,7 @@ namespace {{packageName}}.Test.Api
 
         [Given(@"the request has a parameter ""(.+)"" with a value of ""(.+)""")]
         [And(@"the request has a parameter ""(.+)"" with a value of ""(.+)""")]
-        public void Given_Request_Has_A_Parameter_With_A_Value_Of(string parameter, string value)
+        public void Given_The_Request_Has_A_Parameter_With_A_Value_Of(string parameter, string value)
         {
             {{#operations}}
             {{#operation}}
@@ -92,7 +92,7 @@ namespace {{packageName}}.Test.Api
 
         [Given(@"the request has a parameter ""(.+)"" with a value of:")]
         [And(@"the request has a parameter ""(.+)"" with a value of:")]
-        public void Given_Request_Has_A_Parameter_With_A_Value_Of(string parameter, DocString docString)
+        public void Given_The_Request_Has_A_Parameter_With_A_Value_Of(string parameter, DocString docString)
         {
             if (docString.ContentType != "json")
             {
@@ -122,7 +122,7 @@ namespace {{packageName}}.Test.Api
 
         [Given(@"the request has a parameter ""(.+)"" containing:")]
         [And(@"the request has a parameter ""(.+)"" containing:")]
-        public void Given_Request_Has_A_Parameter_Containing(string parameter, DataTable dataTable)
+        public void Given_The_Request_Has_A_Parameter_Containing(string parameter, DataTable dataTable)
         {
             {{#operations}}
             {{#operation}}
@@ -174,7 +174,7 @@ namespace {{packageName}}.Test.Api
         }
 
         [Then("the response status is (.+)")]
-        public void The_Response_Status_Is(int statusCode)
+        public void Then_The_Response_Status_Is(int statusCode)
         {
             Assert.Equal((HttpStatusCode)statusCode, response.StatusCode);
         }
