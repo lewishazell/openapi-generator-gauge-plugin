@@ -34,7 +34,7 @@ Feature: PetStore API
 
     Scenario: I request to add a pet to the pet store
         Given there is an "addPet" request
-        And the request has a parameter "newPet" with a value of:
+        And the request has a parameter "petDetails" with a value of:
             """json
             {
                 "name": "Pickle",
