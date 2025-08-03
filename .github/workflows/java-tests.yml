@@ -1,0 +1,50 @@
+name: java-tests
+
+on:
+  push:
+    branches:
+      - main
+    pull_request:
+
+jobs:
+  generate-and-test:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '24'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Install tools
+        run: |
+          npm install -g @stoplight/prism-cli @openapitools/openapi-generator-cli
+          sudo apt install maven -y
+
+      - name: Generate java source
+        run: |
+          openapi-generator-cli generate -t templates/java -g java --package-name PetStore -i tests/petstore-extended.yaml -o out/java
+          mkdir -p out/java/src/test/resources
+          cp tests/*.feature out/java/src/test/resources
+
+      - name: Start Prism server
+        run: prism mock tests/petstore-extended.yaml & sleep 15
+
+      - name: Run Gradle test
+        run: gradle test
+        working-directory: out/java
+
+      - name: Run Maven test
+        run: mvn test
+        working-directory: out/java
+
+      - name: Stop Prism server
+        if: success() || failure()
+        run: pkill -f prism

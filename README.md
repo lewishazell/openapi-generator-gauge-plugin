@@ -3,6 +3,7 @@
 ![csharp tests](https://github.com/lewishazell/openapi-generator-cucumber-templates/actions/workflows/csharp-tests.yml/badge.svg)
 ![python tests](https://github.com/lewishazell/openapi-generator-cucumber-templates/actions/workflows/python-tests.yml/badge.svg)
 ![go tests](https://github.com/lewishazell/openapi-generator-cucumber-templates/actions/workflows/go-tests.yml/badge.svg)
+![java tests](https://github.com/lewishazell/openapi-generator-cucumber-templates/actions/workflows/java-tests.yml/badge.svg)
 ![license](https://img.shields.io/github/license/lewishazell/openapi-generator-cucumber-templates?color=blue)
 
 ## 💡 Project Overview
