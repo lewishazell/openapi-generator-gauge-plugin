@@ -27,19 +27,19 @@ import (
 	{{goImportAlias}} "{{gitHost}}/{{gitUserId}}/{{gitRepoId}}{{#isGoSubmodule}}/{{packageName}}{{/isGoSubmodule}}"
 )
 
-type Request struct {
+type request struct {
 	OperationId string
 	Parameters map[string]any
 }
 
-type {{classname}}Feature struct {
+type feature struct {
 	APIClient *{{goImportAlias}}.APIClient
-	Request *Request
+	Request *request
 	Response *http.Response
 }
 
-func (f *{{classname}}Feature) givenThereIsARequest(operationId string) error {
-	f.Request = &Request {
+func (f *feature) givenThereIsARequest(operationId string) error {
+	f.Request = &request {
 		OperationId: operationId,
 		Parameters:  make(map[string]any),
 	}
@@ -47,7 +47,7 @@ func (f *{{classname}}Feature) givenThereIsARequest(operationId string) error {
 	return nil
 }
 
-func (f *{{classname}}Feature) givenTheRequestHasAParameterWithAValueOf(param string, val string) error {
+func (f *feature) givenTheRequestHasAParameterWithAValueOf(param string, val string) error {
 	{{#operations}}
 	{{#operation}}
 	if f.Request.OperationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}" {
@@ -74,7 +74,7 @@ func (f *{{classname}}Feature) givenTheRequestHasAParameterWithAValueOf(param st
 	return nil
 }
 
-func (f *{{classname}}Feature) givenTheRequestHasAParameterWithAValueOfDocString(param string, val *godog.DocString) error {
+func (f *feature) givenTheRequestHasAParameterWithAValueOfDocString(param string, val *godog.DocString) error {
 	if val.MediaType != "json" {
 		return errors.New("DocString MediaType must be \"json\"")
 	}
@@ -106,7 +106,7 @@ func (f *{{classname}}Feature) givenTheRequestHasAParameterWithAValueOfDocString
 	return nil
 }
 
-func (f *{{classname}}Feature) givenTheRequestHasAParameterContaining(param string, table *godog.Table) error {
+func (f *feature) givenTheRequestHasAParameterContaining(param string, table *godog.Table) error {
 	{{#operations}}
 	{{#operation}}
 	if f.Request.OperationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}" {
@@ -143,7 +143,7 @@ func (f *{{classname}}Feature) givenTheRequestHasAParameterContaining(param stri
 	return nil
 }
 
-func (f *{{classname}}Feature) whenTheRequestIsSent() error {
+func (f *feature) whenTheRequestIsSent() error {
 	{{#operations}}
 	{{#operation}}
 	if f.Request.OperationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}" {
@@ -187,7 +187,7 @@ func (f *{{classname}}Feature) whenTheRequestIsSent() error {
 	return nil
 }
 
-func (f *{{classname}}Feature) thenTheResponseStatusIs(ctx context.Context, statusCode int) error {
+func (f *feature) thenTheResponseStatusIs(ctx context.Context, statusCode int) error {
 	assert.Equal(godog.T(ctx), statusCode, f.Response.StatusCode, "expected status code to be %d but received %d", statusCode, f.Response.StatusCode)
 	
 	return nil
@@ -252,7 +252,7 @@ func Initialize{{#lambda.titlecase}}{{packageName}}{{/lambda.titlecase}}{{classn
 	configuration := {{goImportAlias}}.NewConfiguration()
 	configuration.Scheme = "http"
 	configuration.Host = "localhost:4010"
-	feat := &{{classname}}Feature {
+	feat := &feature {
 		APIClient: {{goImportAlias}}.NewAPIClient(configuration),
 	}
 
