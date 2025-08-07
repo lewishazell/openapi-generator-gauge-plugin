@@ -46,7 +46,7 @@ public class {{classname}}Test {
     public void setup() {
         ApiClient apiClient = new ApiClient();
         apiClient.setBasePath("http://localhost:4010");
-        api = new DefaultApi(apiClient);
+        api = new {{classname}}(apiClient);
     }
 
     @Given("there is a {string} request")
