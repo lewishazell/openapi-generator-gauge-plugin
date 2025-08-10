@@ -30,9 +30,9 @@ jobs:
 
       - name: Generate java source
         run: |
-          openapi-generator-cli generate -t templates/java -g java --package-name PetStore -i tests/petstore-extended.yaml -o out/java
-          mkdir -p out/java/src/test/resources
-          cp tests/*.feature out/java/src/test/resources
+          openapi-generator-cli generate -t codegen/java/templates -c codegen/java/config.yaml -g java --package-name PetStore -i tests/petstore-extended.yaml -o out/java
+          mkdir -p out/java/specs
+          cp tests/*.spec out/java/specs
 
       - name: Start Prism server
         run: prism mock tests/petstore-extended.yaml & sleep 15

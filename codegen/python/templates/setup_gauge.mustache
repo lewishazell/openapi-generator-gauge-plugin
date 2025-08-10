@@ -1,0 +1,206 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+STEP_IMPL_DIR="step_impl"
+DEFAULT_ENV_DIR="env/default"
+
+mkdir -p "$STEP_IMPL_DIR"
+mkdir -p "$DEFAULT_ENV_DIR"
+
+cat > "${STEP_IMPL_DIR}/__init__.py" <<'EOF'
+
+EOF
+
+cat > "${STEP_IMPL_DIR}/step_impl.py" <<'EOF'
+# coding: utf-8
+
+{{>partial_header}}
+
+import enum
+import uuid
+import {{packageName}}
+from typing import TypeVar, List
+from getgauge.python import step, before_scenario, Messages
+
+{{#apiInfo.apis}}
+from {{apiPackage}}.{{classFilename}} import {{classname}}
+{{/apiInfo.apis}}
+
+T = TypeVar('T')
+
+class TestContext:
+    def __init__(self):        
+        configuration = PetStore.Configuration(host = "http://localhost:4010")
+        self.api_client = PetStore.ApiClient(configuration)
+        self.request = None
+        self.response = None
+
+test_context = TestContext()
+@step("Create a <operationId> request for the <classname>")
+def create_a_request_for_the_api(operation_id, classname):
+    test_context.request = Request(classname, operation_id)
+
+@step("Create an <operationId> request for the <classname>")
+def create_an_request_for_the_api(operation_id, classname):
+    test_context.request = Request(classname, operation_id)
+
+@step("Give the <parameter> parameter a value of <value>")
+def give_the_parameter_a_value_of(parameter, value):
+    request = test_context.request
+
+    {{#apiInfo.apis}}
+    if request.classname == "{{#lambda.pascalcase}}{{classname}}{{/lambda.pascalcase}}":
+        {{#operations}}
+        {{#operation}}
+        if request.operation_id == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}":
+            {{#allParams}}
+            if parameter == "{{#lambda.camelcase}}{{paramName}}{{/lambda.camelcase}}":
+                request.parameters["{{paramName}}"] = convert_to({{{dataType}}}, value)
+                return
+            {{/allParams}}
+        {{/operation}}
+        {{/operations}}
+    {{/apiInfo.apis}}
+
+    raise ValueError(f"{request.classname}.{request.operation_id} does not have a parameter called {parameter}")
+
+@step("Give the <parameter> parameter a JSON value of <value>")
+def give_the_parameter_a_json_value_of(parameter, value):
+    request = test_context.request
+
+    {{#apiInfo.apis}}
+    if request.classname == "{{#lambda.pascalcase}}{{classname}}{{/lambda.pascalcase}}":
+        {{#operations}}
+        {{#operation}}
+        if request.operation_id == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}":
+            {{#allParams}}
+            if parameter == "{{#lambda.camelcase}}{{paramName}}{{/lambda.camelcase}}":
+                {{#isModel}}
+                request.parameters[parameter] = {{modelPackage}}.{{{dataType}}}.from_json(value)
+                return
+                {{/isModel}}
+                {{^isModel}}
+                raise TypeError("Cannot deserialize a JSON string to {{{dataType}}}")
+                {{/isModel}}
+            {{/allParams}}
+        {{/operation}}
+        {{/operations}}
+    {{/apiInfo.apis}}
+
+    raise ValueError(f"{request.classname}.{request.operation_id} does not have a parameter called {parameter}")
+
+@step("Give the <parameter> parameter the following values: <table>")
+def give_the_parameter_the_following_values(parameter, table):
+    request = test_context.request
+    
+    {{#apiInfo.apis}}
+    if request.classname == "{{#lambda.pascalcase}}{{classname}}{{/lambda.pascalcase}}":
+        {{#operations}}
+        {{#operation}}
+        if request.operation_id == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}":
+            {{#allParams}}
+            if parameter == "{{#lambda.camelcase}}{{paramName}}{{/lambda.camelcase}}":
+                {{#isContainer}}
+                collection = list[{{{baseType}}}]()
+                for row in table:
+                    collection.append(convert_to({{{baseType}}}, row[0]))
+                request.parameters["{{paramName}}"] = collection
+                return
+                {{/isContainer}}
+                {{^isContainer}}
+                raise TypeError("Cannot read a DataTable into parameter {{#lambda.camelcase}}{{paramName}}{{/lambda.camelcase}} as it is not an array")
+                {{/isContainer}}
+            {{/allParams}}
+        {{/operation}}
+        {{/operations}}
+    {{/apiInfo.apis}}
+
+    raise ValueError(f"{request.classname}.{request.operation_id} does not have a parameter called {parameter}")
+
+@step("Send the request")
+def send_the_request():
+    request = test_context.request
+    
+    {{#apiInfo.apis}}
+    if request.classname == "{{#lambda.pascalcase}}{{classname}}{{/lambda.pascalcase}}":
+        api = {{classname}}(test_context.api_client)
+
+        {{#operations}}
+        {{#operation}}
+        if request.operation_id == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}":
+            test_context.response = api.{{operationId}}_with_http_info({{#allParams}}request.parameters.get("{{#lambda.camelcase}}{{paramName}}{{/lambda.camelcase}}"){{^-last}}, {{/-last}}{{/allParams}})
+        {{/operation}}
+        {{/operations}}
+    {{/apiInfo.apis}}
+
+@step("The response status should be <statusCode>")
+def the_response_status_should_be(status_code):
+    response = test_context.response
+    assert response.status_code == int(status_code)
+
+class Request:
+    def __init__(self, classname, operation_id):
+        self.classname = classname
+        self.operation_id = operation_id
+        self.parameters = {}
+
+def convert_to(to_type: type[T], value: str) -> any:
+    if to_type == str:
+        return value
+    elif to_type == int:
+        return int(value)
+    elif to_type == float:
+        return float(value)
+    elif to_type == bool:
+        return bool(value)
+    elif to_type == uuid.UUID:
+        return uuid.UUID(value)
+    elif issubclass(to_type, enum.Enum):
+        return to_type[value]
+
+    raise TypeError(f"Cannot convert from str to {to_type.__name__}")
+EOF
+
+cat > "manifest.json" <<'EOF'
+{
+  "Language": "python",
+  "Plugins": [
+    "html-report"
+  ]
+}
+EOF
+
+cat > "${DEFAULT_ENV_DIR}/default.properties" <<'EOF'
+# default.properties
+# properties set here will be available to the test execution as environment variables
+
+# sample_key = sample_value
+
+#The path to the gauge reports directory. Should be either relative to the project directory or an absolute path
+gauge_reports_dir = reports
+
+#Set as false if gauge reports should not be overwritten on each execution. A new time-stamped directory will be created on each execution.
+overwrite_reports = true
+
+# Set to false to disable screenshots on failure in reports.
+screenshot_on_failure = true
+
+# The path to the gauge logs directory. Should be either relative to the project directory or an absolute path
+logs_directory = logs
+
+# The path the gauge specifications directory. Takes a comma separated list of specification files/directories.
+gauge_specs_dir = specs
+
+# The default delimiter used read csv files.
+csv_delimiter = ,
+
+# Allows steps to be written in multiline
+allow_multiline_step = false
+EOF
+
+cat > "${DEFAULT_ENV_DIR}/python.properties" <<EOF
+GAUGE_PYTHON_COMMAND = python
+
+# Comma seperated list of dirs. path should be relative to project root.
+STEP_IMPL_DIR = ${STEP_IMPL_DIR}
+EOF

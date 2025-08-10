@@ -1,5 +1,6 @@
 apply plugin: 'idea'
 apply plugin: 'eclipse'
+apply plugin: 'org.gauge'
 
 group = '{{groupId}}'
 version = '{{artifactVersion}}'
@@ -7,10 +8,14 @@ version = '{{artifactVersion}}'
 buildscript {
     repositories {
         mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.3.+'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
+        classpath 'org.gauge.gradle:gauge-gradle-plugin:2.1.0'
     }
 }
 
@@ -131,7 +136,7 @@ ext {
     jodatime_version = "2.9.9"
     junit_version = "5.13.3"
     junit_platform_version = "1.13.3"
-    cucumber_version = "7.26.0"
+    gauge_version = "0.12.0"
     {{#useReflectionEqualsHashCode}}
     commons_lang3_version = "3.17.0"
     {{/useReflectionEqualsHashCode}}
@@ -168,8 +173,7 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_version"
     testImplementation "org.junit.platform:junit-platform-suite:$junit_platform_version"
-    testImplementation "io.cucumber:cucumber-java:${cucumber_version}"
-    testImplementation "io.cucumber:cucumber-junit-platform-engine:${cucumber_version}"
+    testImplementation "com.thoughtworks.gauge:gauge-java:${gauge_version}"
 }
 
 javadoc {
@@ -187,5 +191,6 @@ test {
     testLogging {
         events "passed", "skipped", "failed"
     }
-
+    
+    finalizedBy 'gauge'
 }

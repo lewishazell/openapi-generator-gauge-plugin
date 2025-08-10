@@ -115,6 +115,20 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>com.thoughtworks.gauge.maven</groupId>
+                <artifactId>gauge-maven-plugin</artifactId>
+                <version>1.6.4</version>
+                <executions>
+                    <execution>
+                        <id>run-gauge</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
             <!-- attach test jar -->
             <plugin>
@@ -398,15 +412,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.cucumber</groupId>
-            <artifactId>cucumber-java</artifactId>
-            <version>${cucumber.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.cucumber</groupId>
-            <artifactId>cucumber-junit-platform-engine</artifactId>
-            <version>${cucumber.version}</version>
+            <groupId>com.thoughtworks.gauge</groupId>
+            <artifactId>gauge-java</artifactId>
+            <version>${gauge.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -439,6 +447,6 @@
         <maven-plugin-version>1.0.0</maven-plugin-version>
         <junit-version>5.13.3</junit-version>
         <junit-platform.version>1.13.3</junit-platform.version>
-        <cucumber.version>7.26.0</cucumber.version>
+        <gauge.version>0.12.0</gauge.version>
     </properties>
 </project>

@@ -1,0 +1,299 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+TEST_DIR="src/test/java"
+DEFAULT_ENV_DIR="env/default"
+
+mkdir -p "$DEFAULT_ENV_DIR"
+
+cat > "${TEST_DIR}/StepImplementation.java" <<'EOF'
+import {{apiPackage}}.*;
+import {{modelPackage}}.*;
+import {{invokerPackage}}.ApiClient;
+import {{invokerPackage}}.ApiException;
+import {{invokerPackage}}.ApiResponse;
+{{#imports}}import {{import}};
+{{/imports}}
+import com.thoughtworks.gauge.Step;
+import com.thoughtworks.gauge.Table;
+import com.thoughtworks.gauge.TableRow;
+
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+public class StepImplementation {
+    private static Gson gson = new Gson();
+    private Request request;
+    private ApiResponse<?> response;
+    private ApiClient apiClient = new ApiClient();;
+
+    public StepImplementation() {
+        apiClient.setBasePath("http://localhost:4010");
+    }
+
+    @Step("Create a <operationId> request for the <classname>")
+    public void createARequestForApi(String operationId, String classname) {
+        request = new Request(classname, operationId);
+    }
+
+    @Step("Create an <operationId> request for the <classname>")
+    public void createAnRequestForApi(String operationId, String classname) {
+        request = new Request(classname, operationId);
+    }
+
+    @Step("Give the <parameter> parameter a value of <value>")
+    public void giveTheParameterAValueOf(String parameter, String value) {
+        {{#apiInfo.apis}}
+        if ("{{#lambda.pascalcase}}{{classname}}{{/lambda.pascalcase}}".equals(request.getClassname())) {
+            {{#operations}}
+            {{#operation}}
+            if ("{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}".equals(request.getOperationId())) {
+                {{#allParams}}
+                if ("{{paramName}}".equals(parameter)) {
+                    {{^isContainer}}
+                    request.getParameters().put("{{paramName}}", Converter.convertTo({{{dataType}}}.class, value));
+                    return;
+                    {{/isContainer}}
+                    {{#isContainer}}
+                    throw new IllegalArgumentException("Cannot set collection parameter {{paramName}} from String value");
+                    {{/isContainer}}
+                }
+                {{^-last}}
+
+                {{/-last}}
+                {{/allParams}}
+            }
+            {{^-last}}
+
+            {{/-last}}
+            {{/operation}}
+            {{/operations}}
+        }
+        
+        {{/apiInfo.apis}}
+        throw new IllegalArgumentException(request.getClassname() + "." + request.getOperationId() + " does not have a parameter called " + parameter);
+    }
+
+    @Step("Give the <parameter> parameter a JSON value of <value>")
+    public void giveTheParameterAJsonValueOf(String parameter, String value) throws Exception {
+        {{#apiInfo.apis}}
+        if ("{{#lambda.pascalcase}}{{classname}}{{/lambda.pascalcase}}".equals(request.getClassname())) {
+            {{#operations}}
+            {{#operation}}
+            if ("{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}".equals(request.getOperationId())) {
+                {{#allParams}}
+                if ("{{paramName}}".equals(parameter)) {
+                    {{^isContainer}}
+                    Object deserialized = gson.fromJson(value, {{dataType}}.class);
+                    {{/isContainer}}
+                    {{#isContainer}}
+                    Type type = TypeToken.getParameterized(List.class, {{baseType}}.class).getType();
+                    Object deserialized = gson.fromJson(value, type);
+                    {{/isContainer}}
+                    request.getParameters().put("{{paramName}}", deserialized);
+                    return;
+                }
+                {{^-last}}
+
+                {{/-last}}
+                {{/allParams}}
+            }
+            {{^-last}}
+
+            {{/-last}}
+            {{/operation}}
+            {{/operations}}
+        }
+
+        {{/apiInfo.apis}}
+        throw new IllegalArgumentException(request.getClassname() + "." + request.getOperationId() + " does not have a parameter called " + parameter);
+    }
+
+    @Step("Give the <parameter> parameter the following values: <table>")
+    public void giveTheParameterTheFollowingValues(String parameter, Table table) {
+        {{#apiInfo.apis}}
+        if ("{{#lambda.pascalcase}}{{classname}}{{/lambda.pascalcase}}".equals(request.getClassname())) {
+            {{#operations}}
+            {{#operation}}
+                if ("{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}".equals(request.getOperationId())) {
+                {{#allParams}}
+                if ("{{paramName}}".equals(parameter)) {
+                    {{#isContainer}}
+                    {{{dataType}}} collection = new ArrayList<{{{baseType}}}>();
+                    for (TableRow row : table.getTableRows()) {
+                        String value = row.getCell("value");
+                        collection.add(Converter.convertTo({{{baseType}}}.class, value));
+                    }
+
+                    request.getParameters().put("{{paramName}}", collection);
+                    return;
+                    {{/isContainer}}
+                    {{^isContainer}}
+                    throw new UnsupportedOperationException("Cannot read a DataTable into non-collection parameter {{#lambda.camelcase}}{{paramName}}{{/lambda.camelcase}}");
+                    {{/isContainer}}
+                }
+                {{^-last}}
+
+                {{/-last}}
+                {{/allParams}}
+            }
+            {{^-last}}
+
+            {{/-last}}
+            {{/operation}}
+            {{/operations}}
+        }
+
+        {{/apiInfo.apis}}
+        throw new IllegalArgumentException(request.getClassname() + "." + request.getOperationId() + " does not have a parameter called " + parameter);
+    }
+
+    @Step("Send the request")
+    public void sendTheRequest() throws ApiException {
+        {{#apiInfo.apis}}
+        if ("{{#lambda.pascalcase}}{{classname}}{{/lambda.pascalcase}}".equals(request.getClassname())) {
+            {{classname}} api = new {{classname}}(apiClient);
+
+            {{#operations}}
+            {{#operation}}
+            if ("{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}".equals(request.getOperationId())) {
+                response = api.{{operationId}}WithHttpInfo({{#allParams}}({{{dataType}}})request.getParameters().get("{{paramName}}"){{^-last}}, {{/-last}}{{/allParams}});
+            }
+            {{^-last}}
+
+            {{/-last}}
+            {{/operation}}
+            {{/operations}}
+        }
+        {{/apiInfo.apis}}
+    }
+
+    @Step("The response status should be <statusCode>")
+    public void thenTheResponseStatusIs(int statusCode) {
+        assertThat(statusCode).isEqualTo(response.getStatusCode());
+    }
+
+    private class Request {
+        private String classname;
+        private String operationId;
+        private HashMap<String, Object> parameters = new HashMap<String, Object>();
+
+        public Request(String classname, String operationId) {
+            this.classname = classname;
+            this.operationId = operationId;
+        }
+
+        public String getClassname() {
+            return classname;
+        }
+
+        public String getOperationId() {
+            return operationId;
+        }
+
+        public HashMap<String, Object> getParameters() {
+            return parameters;
+        }
+    }
+
+    private static class Converter {
+        public static <T> T convertTo(Class<T> cls, String s) throws IllegalArgumentException {
+            try {
+                if (cls == String.class) {
+                    return cls.cast(s);
+                } else if (cls == Integer.class) {
+                    return cls.cast(Integer.parseInt(s));
+                } else if (cls == Long.class) {
+                    return cls.cast(Long.parseLong(s));
+                } else if (cls == Float.class) {
+                    return cls.cast(Float.parseFloat(s));
+                } else if (cls == Double.class) {
+                    return cls.cast(Double.parseDouble(s));
+                } else if (cls == Boolean.class) {
+                    return cls.cast(Boolean.parseBoolean(s));
+                } else if (cls == UUID.class) {
+                    return cls.cast(UUID.fromString(s));
+                }
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Cannot convert '" + s + "' to " + cls.getSimpleName(), e);
+            }
+
+            throw new IllegalArgumentException("Cannot convert from String to " + cls.getSimpleName());
+        }
+    }
+}
+EOF
+
+cat > "manifest.json" <<'EOF'
+{
+  "Language": "java",
+  "Plugins": [
+    "html-report"
+  ]
+}
+EOF
+
+cat > "${DEFAULT_ENV_DIR}/default.properties" <<'EOF'
+# default.properties
+# properties set here will be available to the test execution as environment variables
+
+# sample_key = sample_value
+
+# The path to the gauge reports directory. Should be either relative to the project directory or an absolute path
+gauge_reports_dir = reports
+
+# Set as false if gauge reports should not be overwritten on each execution. A new time-stamped directory will be created on each execution.
+overwrite_reports = true
+
+# Set to false to disable screenshots on failure in reports.
+screenshot_on_failure = true
+
+# The path to the gauge logs directory. Should be either relative to the project directory or an absolute path
+logs_directory = logs
+
+# Set to true to use multithreading for parallel execution
+enable_multithreading = false
+
+# The path the gauge specifications directory. Takes a comma separated list of specification files/directories.
+gauge_specs_dir = specs
+
+# The default delimiter used read csv files.
+csv_delimiter = ,
+
+# Allows steps to be written in multiline
+allow_multiline_step = false
+EOF
+
+cat > "${DEFAULT_ENV_DIR}/java.properties" <<'EOF'
+# Specify an alternate Java home if you want to use a custom version
+gauge_java_home =
+
+# IntelliJ and Eclipse out directory will be usually autodetected
+# Use the below property if you need to override the build path
+gauge_custom_build_path =
+
+# specify the directory where additional libs are kept
+# you can specify multiple directory names separated with a comma (,)
+gauge_additional_libs = libs/*
+
+# JVM arguments passed to java while launching. Enter multiple values separated by comma (,) eg. Xmx1024m, Xms128m
+gauge_jvm_args =
+
+# specify the directory containing java files to be compiled
+# you can specify multiple directory names separated with a comma (,)
+gauge_custom_compile_dir =
+
+# specify the level at which the objects should be cleared
+# Possible values are suite, spec and scenario. Default value is scenario.
+gauge_clear_state_level = scenario
+EOF
