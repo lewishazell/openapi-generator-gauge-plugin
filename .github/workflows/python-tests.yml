@@ -19,12 +19,18 @@ jobs:
           python-version: '3.13'
 
       - name: Install tools
-        run: npm install -g @stoplight/prism-cli @openapitools/openapi-generator-cli
+        run: npm install -g @stoplight/prism-cli @openapitools/openapi-generator-cli @getgauge/cli
 
       - name: Generate python source
         run: |
-          openapi-generator-cli generate -t templates/python -g python --package-name PetStore -i tests/petstore-extended.yaml -o out/python
-          cp tests/*.feature out/python/test
+          openapi-generator-cli generate -t codegen/python/templates -c codegen/python/config.yaml -g python --package-name PetStore -i tests/petstore-extended.yaml -o out/python
+          cp -r tests/specs out/python
+
+      - name: Setup gauge tests
+        run: |
+          chmod +x setup_gauge.sh
+          ./setup_gauge.sh
+        working-directory: out/python
 
       - name: Start Prism server
         run: prism mock tests/petstore-extended.yaml & sleep 15
@@ -36,7 +42,7 @@ jobs:
         working-directory: out/python
 
       - name: Run tests
-        run: pytest
+        run: gauge run specs
         working-directory: out/python
 
       - name: Stop Prism server

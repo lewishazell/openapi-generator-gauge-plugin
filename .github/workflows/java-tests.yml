@@ -22,27 +22,34 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.14
 
       - name: Install tools
         run: |
-          npm install -g @stoplight/prism-cli @openapitools/openapi-generator-cli
+          npm install -g @stoplight/prism-cli @openapitools/openapi-generator-cli @getgauge/cli
           sudo apt install maven -y
 
       - name: Generate java source
         run: |
           openapi-generator-cli generate -t codegen/java/templates -c codegen/java/config.yaml -g java --package-name PetStore -i tests/petstore-extended.yaml -o out/java
-          mkdir -p out/java/specs
-          cp tests/*.spec out/java/specs
+          cp -r tests/specs out/java
+
+      - name: Setup gauge tests
+        run: |
+          chmod +x setup_gauge.sh
+          ./setup_gauge.sh
+        working-directory: out/java
 
       - name: Start Prism server
         run: prism mock tests/petstore-extended.yaml & sleep 15
 
       - name: Run Gradle test
-        run: gradle test
+        run: gradle gauge
         working-directory: out/java
 
       - name: Run Maven test
-        run: mvn test
+        run: mvn test-compile gauge:execute
         working-directory: out/java
 
       - name: Stop Prism server

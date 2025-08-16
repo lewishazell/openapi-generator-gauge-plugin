@@ -19,12 +19,20 @@ jobs:
           go-version: '^1.24.0'
 
       - name: Install tools
-        run: npm install -g @stoplight/prism-cli @openapitools/openapi-generator-cli
+        run: |
+          npm install -g @stoplight/prism-cli @openapitools/openapi-generator-cli @getgauge/cli
+          gauge install go
 
       - name: Generate go source
         run: |
-          openapi-generator-cli generate -t templates/go -g go --package-name PetStore -i tests/petstore-extended.yaml -o out/go
-          cp tests/*.feature out/go/test
+          openapi-generator-cli generate -t codegen/go/templates -c codegen/go/config.yaml -g go --package-name PetStore -i tests/petstore-extended.yaml -o out/go
+          cp -r tests/specs out/go
+
+      - name: Setup gauge tests
+        run: |
+          chmod +x setup_gauge.sh
+          ./setup_gauge.sh
+        working-directory: out/go
 
       - name: Start Prism server
         run: prism mock tests/petstore-extended.yaml & sleep 15
@@ -34,8 +42,8 @@ jobs:
         working-directory: out/go/test
 
       - name: Run test
-        run: go test
-        working-directory: out/go/test
+        run: gauge run specs
+        working-directory: out/go
 
       - name: Stop Prism server
         if: success() || failure()

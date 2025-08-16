@@ -19,19 +19,25 @@ jobs:
           dotnet-version: '9.0.x'
 
       - name: Install tools
-        run: npm install -g @stoplight/prism-cli @openapitools/openapi-generator-cli
+        run: npm install -g @stoplight/prism-cli @openapitools/openapi-generator-cli @getgauge/cli
 
       - name: Generate csharp source
         run: |
-          openapi-generator-cli generate -t templates/csharp -g csharp --package-name PetStore -i tests/petstore-extended.yaml -o out/csharp
-          cp tests/*.feature out/csharp/src/PetStore.Test
+          openapi-generator-cli generate -t codegen/csharp/templates -c codegen/csharp/config.yaml -g csharp --package-name PetStore -i tests/petstore-extended.yaml -o out/csharp
+          cp -r tests/specs out/csharp/src/PetStore.Test
+
+      - name: Setup gauge tests
+        run: |
+          chmod +x setup_gauge.sh
+          ./setup_gauge.sh
+        working-directory: out/csharp
 
       - name: Start Prism server
         run: prism mock tests/petstore-extended.yaml & sleep 15
 
-      - name: Run test
-        run: dotnet test
-        working-directory: out/csharp
+      - name: Run gauge
+        run: gauge run specs
+        working-directory: out/csharp/src/PetStore.Test
 
       - name: Stop Prism server
         if: success() || failure()
