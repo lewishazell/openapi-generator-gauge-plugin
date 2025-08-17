@@ -27,6 +27,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+    "net/url"
+    "os"
 	"reflect"
 	"strconv"
 
@@ -269,9 +271,25 @@ func safeCast[T any](value interface{}) T {
 }
 
 func init() {
+	targetHost := os.Getenv("GAUGE_TARGET_HOST")
+	if targetHost == "" {
+		targetHost = "{{gaugeTargetHost}}"
+	}
+
+	if targetHost == "" {
+		T.Fail(errors.New("missing required configuration: 'GAUGE_TARGET_HOST'. please set GAUGE_TARGET_HOST environment variable or pass -p gaugeTargetHost=http://your-api"))
+        return
+	}
+
+	targetUrl, err := url.Parse(targetHost)
+	if err != nil {
+		T.Fail(errors.New("Invalid GAUGE_TARGET_HOST: " + err.Error()))
+        return
+	}
+
 	configuration := {{goImportAlias}}.NewConfiguration()
-	configuration.Scheme = "http"
-	configuration.Host = "localhost:4010"
+	configuration.Scheme = targetUrl.Scheme
+	configuration.Host = targetUrl.Host
 	feat := &feature {
 		APIClient: {{goImportAlias}}.NewAPIClient(configuration),
 	}
@@ -322,6 +340,13 @@ csv_delimiter = ,
 
 # Allows steps to be written in multiline
 allow_multiline_step = false
+
+# The base URL your API client will use in tests.
+# Can be overridden at runtime by setting the GAUGE_TARGET_HOST environment variable.
+# For example:
+#   export GAUGE_TARGET_HOST=http://localhost:4010
+# This value is injected by OpenAPI Generator via -p gaugeTargetHost=...
+GAUGE_TARGET_HOST = {{gaugeTargetHost}}
 EOF
 
 cat > "${DEFAULT_ENV_DIR}/go.properties" <<EOF

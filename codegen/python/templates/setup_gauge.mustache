@@ -18,6 +18,7 @@ cat > "${STEP_IMPL_DIR}/step_impl.py" <<'EOF'
 
 import enum
 import uuid
+import os
 import {{packageName}}
 from typing import TypeVar, List
 from getgauge.python import step, before_scenario, Messages
@@ -29,8 +30,13 @@ from {{apiPackage}}.{{classFilename}} import {{classname}}
 T = TypeVar('T')
 
 class TestContext:
-    def __init__(self):        
-        configuration = PetStore.Configuration(host = "http://localhost:4010")
+    def __init__(self):
+        target_host = os.getenv("GAUGE_TARGET_HOST", "{{gaugeTargetHost}}")
+
+        if not target_host:
+            raise ValueError("TARGET_HOST is not set or still set to the default placeholder. Please set the GAUGE_TARGET_HOST environment variable or pass -p gaugeTargetHost=... during generation.")
+
+        configuration = PetStore.Configuration(host=target_host)
         self.api_client = PetStore.ApiClient(configuration)
         self.request = None
         self.response = None
@@ -196,6 +202,13 @@ csv_delimiter = ,
 
 # Allows steps to be written in multiline
 allow_multiline_step = false
+
+# The base URL your API client will use in tests.
+# Can be overridden at runtime by setting the GAUGE_TARGET_HOST environment variable.
+# For example:
+#   export GAUGE_TARGET_HOST=http://localhost:4010
+# This value is injected by OpenAPI Generator via -p gaugeTargetHost=...
+GAUGE_TARGET_HOST = {{gaugeTargetHost}}
 EOF
 
 cat > "${DEFAULT_ENV_DIR}/python.properties" <<EOF
