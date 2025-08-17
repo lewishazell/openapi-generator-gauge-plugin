@@ -25,7 +25,7 @@ jobs:
 
       - name: Generate go source
         run: |
-          openapi-generator-cli generate -t codegen/go/templates -c codegen/go/config.yaml -g go --package-name PetStore -i tests/petstore-extended.yaml -o out/go
+          openapi-generator-cli generate -t codegen/go/templates -c codegen/go/config.yaml -g go --package-name PetStore -i tests/petstore-extended.yaml -o out/go -p gaugeTargetHost=http://localhost:4010
           cp -r tests/specs out/go
 
       - name: Setup gauge tests

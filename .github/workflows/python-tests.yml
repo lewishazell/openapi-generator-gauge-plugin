@@ -23,7 +23,7 @@ jobs:
 
       - name: Generate python source
         run: |
-          openapi-generator-cli generate -t codegen/python/templates -c codegen/python/config.yaml -g python --package-name PetStore -i tests/petstore-extended.yaml -o out/python
+          openapi-generator-cli generate -t codegen/python/templates -c codegen/python/config.yaml -g python --package-name PetStore -i tests/petstore-extended.yaml -o out/python -p gaugeTargetHost=http://localhost:4010
           cp -r tests/specs out/python
 
       - name: Setup gauge tests

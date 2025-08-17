@@ -32,7 +32,7 @@ jobs:
 
       - name: Generate java source
         run: |
-          openapi-generator-cli generate -t codegen/java/templates -c codegen/java/config.yaml -g java --package-name PetStore -i tests/petstore-extended.yaml -o out/java
+          openapi-generator-cli generate -t codegen/java/templates -c codegen/java/config.yaml -g java --package-name PetStore -i tests/petstore-extended.yaml -o out/java -p gaugeTargetHost=http://localhost:4010
           cp -r tests/specs out/java
 
       - name: Setup gauge tests
