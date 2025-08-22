@@ -1,4 +1,0 @@
-files:
-  setup_gauge.mustache:
-    destinationFilename: setup_gauge.sh
-    templateType: SupportingFiles

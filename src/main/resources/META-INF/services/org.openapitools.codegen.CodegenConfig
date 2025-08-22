@@ -1,0 +1,4 @@
+dev.hazell.openapi.gauge.codegen.PythonGaugeGenerator
+dev.hazell.openapi.gauge.codegen.CSharpGaugeGenerator
+dev.hazell.openapi.gauge.codegen.JavaGaugeGenerator
+dev.hazell.openapi.gauge.codegen.GoGaugeGenerator
