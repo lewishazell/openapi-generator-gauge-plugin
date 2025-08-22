@@ -20,19 +20,16 @@ jobs:
 
       - name: Install tools
         run: |
-          npm install -g @stoplight/prism-cli @openapitools/openapi-generator-cli @getgauge/cli
-          gauge install go
+          npm install -g @stoplight/prism-cli @getgauge/cli
+          wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.11.0/openapi-generator-cli-7.11.0.jar
+
+      - name: Build codegen
+        run: mvn clean install
 
       - name: Generate go source
         run: |
-          openapi-generator-cli generate -t codegen/go/templates -c codegen/go/config.yaml -g go --package-name PetStore -i tests/petstore-extended.yaml -o out/go -p gaugeTargetHost=http://localhost:4010
+          java -cp target/gauge-codegen-1.0.0.jar:openapi-generator-cli-7.11.0.jar org.openapitools.codegen.OpenAPIGenerator generate -g go-gauge --package-name PetStore -i tests/petstore-extended.yaml -o out/go -p gaugeTargetHost=http://localhost:4010
           cp -r tests/specs out/go
-
-      - name: Setup gauge tests
-        run: |
-          chmod +x setup_gauge.sh
-          ./setup_gauge.sh
-        working-directory: out/go
 
       - name: Start Prism server
         run: prism mock tests/petstore-extended.yaml & sleep 15
