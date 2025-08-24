@@ -19,16 +19,14 @@ jobs:
           dotnet-version: '9.0.x'
 
       - name: Install tools
-        run: |
-          npm install -g @stoplight/prism-cli @getgauge/cli
-          wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.11.0/openapi-generator-cli-7.11.0.jar
+        run: npm install -g @stoplight/prism-cli @getgauge/cli @openapitools/openapi-generator-cli
 
       - name: Build codegen
         run: mvn clean install
 
       - name: Generate csharp source
         run: |
-          java -cp target/gauge-codegen-1.0.0.jar:openapi-generator-cli-7.11.0.jar org.openapitools.codegen.OpenAPIGenerator generate -g csharp-gauge --package-name PetStore -i tests/petstore-extended.yaml -o out/csharp -p gaugeTargetHost=http://localhost:4010
+          openapi-generator-cli --custom-generator target/openapi-generator-gauge-plugin-1.0.0.jar generate -g csharp-gauge --package-name PetStore -i tests/petstore-extended.yaml -o out/csharp -p gaugeTargetHost=http://localhost:4010
           cp -r tests/specs out/csharp/src/PetStore.Test
 
       - name: Start Prism server
