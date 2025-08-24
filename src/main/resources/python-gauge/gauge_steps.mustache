@@ -3,6 +3,7 @@
 {{>partial_header}}
 
 import enum
+import json
 import uuid
 import os
 import {{packageName}}
@@ -127,8 +128,24 @@ def send_the_request():
 
 @step("The response status should be <statusCode>")
 def the_response_status_should_be(status_code):
-    response = test_context.response
-    assert response.status_code == int(status_code)
+    assert test_context.response.status_code == int(status_code)
+
+@step("The response content should be <content>")
+def the_response_content_should_be(content):
+    content_type = ""
+    if test_context.response.headers is not None:
+        headers_lower = {k.lower(): v for k, v in test_context.response.headers.items()}
+        content_type = headers_lower.get("content-type", "").lower()
+
+    if "application/json" in content_type:
+        actual_json = test_context.response.raw_data.decode('utf-8')
+        actual = json.loads(actual_json)
+        expected = json.loads(content)
+
+        assert actual == expected, f"Expected {content}, but got {actual_json}"
+
+    else:
+        raise ValueError(f"Cannot assert against unsupported content type: {content_type}")
 
 class Request:
     def __init__(self, classname, operation_id):

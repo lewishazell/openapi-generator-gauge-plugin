@@ -182,7 +182,28 @@ public class StepImplementation {
 
     @Step("The response status should be <statusCode>")
     public void thenTheResponseStatusIs(int statusCode) {
-        assertThat(statusCode).isEqualTo(response.getStatusCode());
+        assertThat(response.getStatusCode()).isEqualTo(statusCode);
+    }
+
+    @Step("The response content should be <content>")
+    public void theResponseContentShouldBe(String content) {
+        String contentType = null;
+
+        if (response.getHeaders().containsKey("Content-Type")) {
+            contentType = response.getHeaders().get("Content-Type").stream()
+                    .findFirst()
+                    .map(String::toLowerCase)
+                    .orElse(null);
+        }
+
+        if (contentType != null && contentType.startsWith("application/json")) {
+            JsonElement actual = JsonParser.parseString(gson.toJson(response.getData()));
+            JsonElement expected = JsonParser.parseString(content);
+
+            assertThat(actual).isEqualTo(expected);
+        } else {
+            throw new UnsupportedOperationException("Cannot assert against unsupported content type: " + contentType);
+        }
     }
 
     private class Request {

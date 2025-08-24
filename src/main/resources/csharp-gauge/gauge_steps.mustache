@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
 {{#useRestSharp}}
@@ -200,9 +201,31 @@ namespace {{packageName}}.Test
         }
 
         [Step("The response status should be <statusCode>")]
-        public void ThenTheResponseStatusIs(int statusCode)
+        public void TheResponseStatusIs(int statusCode)
         {
             response.StatusCode.ShouldBe((HttpStatusCode)statusCode);
+        }
+
+        [Step("The response content should be <content>")]
+        public void TheResponseContentShouldBe(string content)
+        {
+            MediaTypeHeaderValue? mediaType = null;
+            if(response.Headers.TryGetValue("Content-Type", out var contentTypeValues) && contentTypeValues.Count > 0)
+            {
+                mediaType = MediaTypeHeaderValue.Parse(contentTypeValues.First().ToLowerInvariant());
+            }
+
+            if (mediaType is { MediaType: "application/json" })
+            {
+                var actual = JsonConvert.DeserializeObject<JToken>(response.RawContent);
+                var expected = JsonConvert.DeserializeObject<JToken>(content);
+                
+                JToken.DeepEquals(actual, expected).ShouldBeTrue();
+            }
+            else
+            {
+                throw new InvalidOperationException($"Cannot assert against unsupported media type: {mediaType?.MediaType}");
+            }
         }
 
         private class RequestParameters

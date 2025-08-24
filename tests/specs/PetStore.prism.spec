@@ -8,6 +8,7 @@ This scenario ensures that the user can successfully retrieve a pet from the sto
     * Give the "id" parameter a value of "1"
 * Send the request
 * The response status should be "200"
+* The response content should be "{\"name\":\"string\",\"tag\":\"string\",\"id\":-9007199254740991}"
 
 ## Successfully delete a pet from the pet store
 This scenario verifies that a pet can be deleted successfully from the pet store using its ID.
@@ -17,24 +18,27 @@ This scenario verifies that a pet can be deleted successfully from the pet store
 * Send the request
 * The response status should be "204"
 
-## Successfully list of all pets at the pet store with a matching tag
+## Successfully list all pets at the pet store with a matching tag
 This scenario checks that the user can list pets at the pet store that match specified tags.
 
 * Create a "findPets" request for the "DefaultApi"
     * Give the "tags" parameter the following values:
         | value |
+        |-------|
         | cat   |
         | dog   |
     * Give the "limit" parameter a value of "2"
 * Send the request
 * The response status should be "200"
+* The response content should be "[{\"name\":\"string\",\"tag\":\"string\",\"id\":-9007199254740991}]"
 
-## Successfully list of all pets at the pet store with a matching tag with no limit
+## Successfully list all pets at the pet store with a matching tag with no limit
 This scenario tests the ability to list all pets matching specified tags, but without any limits on the number of results.
 
 * Create a "findPets" request for the "DefaultApi"
     * Give the "tags" parameter the following values:
         | value |
+        |-------|
         | cat   |
         | dog   |
 * Send the request
