@@ -9,8 +9,6 @@ on:
 jobs:
   generate-and-test:
     runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
     steps:
       - uses: actions/checkout@v4
 
@@ -26,27 +24,10 @@ jobs:
           gradle-version: 8.14
 
       - name: Install tools
-        run: npm install -g @stoplight/prism-cli @getgauge/cli @openapitools/openapi-generator-cli
-
-      - name: Build codegen
-        run: mvn clean install
-
-      - name: Generate java source
         run: |
-          openapi-generator-cli --custom-generator target/openapi-generator-gauge-plugin-1.0.0.jar generate -g java-gauge --package-name PetStore -i tests/petstore-extended.yaml -o out/java -p gaugeTargetHost=http://localhost:4010
-          cp -r tests/specs out/java
+          npm install -g @stoplight/prism-cli @getgauge/cli @openapitools/openapi-generator-cli
+          sudo apt install shunit2 -y
 
-      - name: Start Prism server
-        run: prism mock tests/petstore-extended.yaml & sleep 15
-
-      - name: Run Gradle test
-        run: gradle gauge
-        working-directory: out/java
-
-      - name: Run Maven test
-        run: mvn test-compile gauge:execute
-        working-directory: out/java
-
-      - name: Stop Prism server
-        if: success() || failure()
-        run: pkill -f prism
+      - name: Test java codegen
+        run: FILTER="testJavaCodegen*" ./test_codegen.sh
+        working-directory: tests
