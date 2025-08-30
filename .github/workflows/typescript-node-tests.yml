@@ -1,0 +1,41 @@
+name: typescript-node-tests
+
+on:
+  push:
+    branches:
+      - main
+    pull_request:
+
+jobs:
+  generate-and-test:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: npm install -g @stoplight/prism-cli @getgauge/cli @openapitools/openapi-generator-cli
+
+      - name: Build codegen
+        run: mvn clean install
+
+      - name: Generate typescript-node source
+        run: |
+          openapi-generator-cli --custom-generator target/openapi-generator-gauge-plugin-1.0.0.jar generate -g typescript-node-gauge -i tests/petstore-extended.yaml -o out/typescript-node -p gaugeTargetHost=http://localhost:4010 -p npmName=petstore
+          cp -r tests/specs out/typescript-node
+
+      - name: Start Prism server
+        run: prism mock tests/petstore-extended.yaml & sleep 15
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: out/typescript-node
+
+      - name: Run test
+        run: gauge run specs
+        working-directory: out/typescript-node
+
+      - name: Stop Prism server
+        if: success() || failure()
+        run: pkill -f prism
