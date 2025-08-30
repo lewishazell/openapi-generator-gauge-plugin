@@ -4,6 +4,7 @@
 ![python tests](https://github.com/lewishazell/openapi-generator-gauge-plugin/actions/workflows/python-tests.yml/badge.svg)
 ![go tests](https://github.com/lewishazell/openapi-generator-gauge-plugin/actions/workflows/go-tests.yml/badge.svg)
 ![java tests](https://github.com/lewishazell/openapi-generator-gauge-plugin/actions/workflows/java-tests.yml/badge.svg)
+![typescript-node tests](https://github.com/lewishazell/openapi-generator-gauge-plugin/actions/workflows/typescript-node-tests.yml/badge.svg)
 ![license](https://img.shields.io/github/license/lewishazell/openapi-generator-gauge-plugin?color=blue)
 
 ## 💡 Project Overview
