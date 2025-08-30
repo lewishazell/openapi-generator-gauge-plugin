@@ -1,0 +1,212 @@
+{{#apiInfo}}
+{{#apis}}
+{{#operations}}
+export * from '../api/{{ classFilename }}';
+import { {{ classname }} } from '../api/{{ classFilename }}';
+{{/operations}}
+{{#withInterfaces}}
+export * from './{{ classFilename }}Interface'
+{{/withInterfaces}}
+{{/apis}}
+{{/apiInfo}}
+import * as http from 'http';
+import * as assert from 'assert';
+import { BeforeSuite, Step, Table } from "gauge-ts";
+import * as contentType from 'content-type';
+
+class TestContext {
+    public request: Request;
+    public response: { message: http.IncomingMessage, body: any };
+    public targetHost: string | undefined;
+}
+
+const ctx = new TestContext();
+
+export class StepImplementation {
+    @BeforeSuite()
+    public beforeSuite() {
+        const defaultHost: string = "{{gaugeTargetHost}}";
+        ctx.targetHost = process.env.GAUGE_TARGET_HOST;
+
+        if (!ctx.targetHost) {
+            ctx.targetHost = defaultHost;
+        }
+
+        if (!ctx.targetHost) {
+            throw new Error("Missing required configuration: 'GAUGE_TARGET_HOST'. Please set the GAUGE_TARGET_HOST environment variable, or pass it during generation with -p gaugeTargetHost=http://your-api");
+        }
+    }
+
+    @Step("Create a <operationId> request for the <classname>")
+    public createARequestForApi(operationId: string, classname: string) {
+        ctx.request = new Request(classname, operationId);
+    }
+
+    @Step("Create an <operationId> request for the <classname>")
+    public createAnRequestForApi(operationId: string, classname: string) {
+        ctx.request = new Request(classname, operationId);
+    }
+
+    @Step("Give the <parameter> parameter a value of <value>")
+    public giveTheParameterAValueOf(parameter: string, value: string) {
+        {{#apiInfo.apis}}
+        if (ctx.request.classname == "{{#lambda.pascalcase}}{{classname}}{{/lambda.pascalcase}}") {
+            {{#operations}}
+            {{#operation}}
+            if (ctx.request.operationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}") {
+                {{#allParams}}
+                if (parameter == "{{paramName}}") {
+                    {{^isContainer}}
+                    ctx.request.parameters["{{paramName}}"] = value;
+                    return;
+                    {{/isContainer}}
+                    {{#isContainer}}
+                    throw new Error("Cannot set collection parameter {{paramName}} from String value");
+                    {{/isContainer}}
+                }
+                {{^-last}}
+
+                {{/-last}}
+                {{/allParams}}
+            }
+            {{^-last}}
+
+            {{/-last}}
+            {{/operation}}
+            {{/operations}}
+        }
+        
+        {{/apiInfo.apis}}
+        throw new Error(ctx.request.classname + "." + ctx.request.operationId + " does not have a parameter called " + parameter);
+    }
+
+    @Step("Give the <parameter> parameter a JSON value of <value>")
+    public giveTheParameterAJsonValueOf(parameter: string, value: string)  {
+        {{#apiInfo.apis}}
+        if (ctx.request.classname == "{{#lambda.pascalcase}}{{classname}}{{/lambda.pascalcase}}") {
+            {{#operations}}
+            {{#operation}}
+            if (ctx.request.operationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}") {
+                {{#allParams}}
+                if (parameter == "{{paramName}}") {
+                    ctx.request.parameters["{{paramName}}"] = JSON.parse(value);
+                    return;
+                }
+                {{^-last}}
+
+                {{/-last}}
+                {{/allParams}}
+            }
+            {{^-last}}
+
+            {{/-last}}
+            {{/operation}}
+            {{/operations}}
+        }
+
+        {{/apiInfo.apis}}
+        throw new Error(ctx.request.classname + "." + ctx.request.operationId + " does not have a parameter called " + parameter);
+    }
+
+    @Step("Give the <parameter> parameter the following values: <table>")
+    public giveTheParameterTheFollowingValues(parameter: string, table: Table) { 
+        {{#apiInfo.apis}}
+        if (ctx.request.classname == "{{#lambda.pascalcase}}{{classname}}{{/lambda.pascalcase}}") {
+            {{#operations}}
+            {{#operation}}
+            if (ctx.request.operationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}") {
+                {{#allParams}}
+                if (parameter == "{{paramName}}") {
+                    {{#isContainer}}
+                    const collection: any[] = [];
+                    for (const row of table.getTableRows()) {
+                        const value: any = row.getCell("value");
+                        collection.push(value);
+                    }
+
+                    ctx.request.parameters["{{paramName}}"] = collection;
+                    return;
+                    {{/isContainer}}
+                    {{^isContainer}}
+                    throw new Error("Cannot read a DataTable into non-collection parameter {{#lambda.camelcase}}{{paramName}}{{/lambda.camelcase}}");
+                    {{/isContainer}}
+                }
+                {{^-last}}
+
+                {{/-last}}
+                {{/allParams}}
+            }
+            {{^-last}}
+
+            {{/-last}}
+            {{/operation}}
+            {{/operations}}
+        }
+
+        {{/apiInfo.apis}}
+        throw new Error(ctx.request.classname + "." + ctx.request.operationId + " does not have a parameter called " + parameter);
+    }
+
+    @Step("Send the request")
+    public async sendTheRequest() {
+        {{#apiInfo.apis}}
+        if (ctx.request.classname == "{{#lambda.pascalcase}}{{classname}}{{/lambda.pascalcase}}") {
+            const api: {{classname}} = new {{classname}}(ctx.targetHost);
+
+            {{#operations}}
+            {{#operation}}
+            if (ctx.request.operationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}") {
+                let { response, body } = await api.{{operationId}}({{#allParams}}ctx.request.parameters["{{paramName}}"]{{^-last}}, {{/-last}}{{/allParams}});
+                ctx.response = { message: response, body };
+            }
+            {{^-last}}
+
+            {{/-last}}
+            {{/operation}}
+            {{/operations}}
+        }
+        {{/apiInfo.apis}}
+    }
+
+    @Step("The response status should be <statusCode>")
+    public thenTheResponseStatusIs(statusCode: string) {
+        assert.strictEqual(ctx.response.message.statusCode, parseInt(statusCode), "Expected response status to be " + statusCode + " but got " + ctx.response.message.statusCode);
+    }
+
+    @Step("The response content should be <content>")
+    public theResponseContentShouldBe(content: string) {
+        const { type } = contentType.parse(ctx.response.message.headers["content-type"]);
+
+        if (type == "application/json") {
+            const actual: any = JSON.parse(JSON.stringify(ctx.response.body));
+            const expected: any = JSON.parse(content);
+
+            assert.deepStrictEqual(actual, expected, "Exepcted response data to be '" + content + "' but got '" + JSON.stringify(actual) + "'");
+        } else {
+            throw new Error("Cannot assert against unsupported content type: " + type);
+        }
+    }
+}
+
+class Request {
+    private _classname: string;
+    private _operationId: string;
+    private _parameters: { [name: string]: any } = {};
+
+    public constructor(classname: string, operationId: string) {
+        this._classname = classname;
+        this._operationId = operationId;
+    }
+
+    public get classname(): string {
+        return this._classname;
+    }
+
+    public get operationId(): string {
+        return this._operationId;
+    }
+
+    public get parameters(): { [name: string]: any } {
+        return this._parameters;
+    }
+}
