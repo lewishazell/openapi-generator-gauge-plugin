@@ -23,8 +23,8 @@ class TestContext:
         if not target_host:
             raise ValueError("TARGET_HOST is not set or still set to the default placeholder. Please set the GAUGE_TARGET_HOST environment variable or pass -p gaugeTargetHost=... during generation.")
 
-        configuration = PetStore.Configuration(host=target_host)
-        self.api_client = PetStore.ApiClient(configuration)
+        configuration = {{packageName}}.Configuration(host=target_host)
+        self.api_client = {{packageName}}.ApiClient(configuration)
         self.request = None
         self.response = None
 
