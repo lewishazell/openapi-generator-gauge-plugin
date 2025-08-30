@@ -44,7 +44,7 @@ testPythonCodegen() {
     filter "$FUNCNAME" || return 0
 
     openapi-generator-cli --custom-generator ../target/openapi-generator-gauge-plugin-1.0.0.jar generate -g python-gauge --package-name petstore -i petstore-extended.yaml -o out -p gaugeTargetHost=http://localhost:4010
-    (cd out && gauge run specs) || fail "Gauge run failed"
+    (cd out && pip install -r requirements.txt -r test-requirements.txt && gauge run specs) || fail "Gauge run failed"
 }
 
 testTypeScriptNodeCodegen() {
