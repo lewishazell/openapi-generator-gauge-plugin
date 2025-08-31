@@ -12,6 +12,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '^1.24.0'
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -23,10 +27,14 @@ jobs:
         with:
           gradle-version: 8.14
 
-      - name: Install tools
-        run: |
-          npm install -g @stoplight/prism-cli @getgauge/cli @openapitools/openapi-generator-cli
-          sudo apt install shunit2 -y
+      - name: Install npm tools
+        run: npm install -g @stoplight/prism-cli @getgauge/cli @openapitools/openapi-generator-cli
+
+      - name: Install shUnit2
+        run: sudo apt install shunit2 -y
+
+      - name: Install jd
+        run: go install github.com/josephburnett/jd/v2/jd@v2.3.0
 
       - name: Test java codegen
         run: FILTER="testJavaCodegen*" ./test_codegen.sh
