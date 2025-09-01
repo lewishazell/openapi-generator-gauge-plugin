@@ -26,5 +26,5 @@ jobs:
         run: go install github.com/josephburnett/jd/v2/jd@v2.3.0
 
       - name: Test typescript-node codegen
-        run: FILTER="testTypeScriptNodeCodegen" ./test_codegen.sh
+        run: ./test_codegen.sh --filter testTypeScriptNodeCodegen
         working-directory: tests

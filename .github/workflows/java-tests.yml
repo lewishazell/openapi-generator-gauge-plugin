@@ -37,5 +37,5 @@ jobs:
         run: go install github.com/josephburnett/jd/v2/jd@v2.3.0
 
       - name: Test java codegen
-        run: FILTER="testJavaCodegen*" ./test_codegen.sh
+        run: ./test_codegen.sh --filter testJavaCodegen*
         working-directory: tests

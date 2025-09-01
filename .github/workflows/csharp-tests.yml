@@ -30,5 +30,5 @@ jobs:
         run: go install github.com/josephburnett/jd/v2/jd@v2.3.0
 
       - name: Test csharp codegen
-        run: FILTER="testCSharpCodegen" ./test_codegen.sh
+        run: ./test_codegen.sh --filter testCSharpCodegen
         working-directory: tests
