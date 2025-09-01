@@ -5,7 +5,7 @@
     <artifactId>openapi-generator-gauge-plugin</artifactId>
     <packaging>jar</packaging>
     <name>openapi-generator-gauge-plugin</name>
-    <version>1.0.0</version>
+    <version>${revision}</version>
     <build>
         <plugins>
             <plugin>
@@ -120,6 +120,7 @@
         </dependency>
     </dependencies>
     <properties>
+        <revision>0.0.1-SNAPSHOT</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <openapi-generator-version>7.11.0</openapi-generator-version>
         <maven-plugin-version>1.0.0</maven-plugin-version>
