@@ -6,6 +6,7 @@
 ![java tests](https://github.com/lewishazell/openapi-generator-gauge-plugin/actions/workflows/java-tests.yml/badge.svg)
 ![typescript-node tests](https://github.com/lewishazell/openapi-generator-gauge-plugin/actions/workflows/typescript-node-tests.yml/badge.svg)
 ![license](https://img.shields.io/github/license/lewishazell/openapi-generator-gauge-plugin?color=blue)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
 ## 💡 Project overview
 
@@ -55,9 +56,8 @@ openapi-generator-cli generate \
   -o python-sdk/
 ```
 
-> Replace `path/to/openapi-generator-gauge-plugin-0.0.1-rc1.jar` with the location of the downloaded plugin JAR file.
-
-> Replace `path/to/your/openapi-spec.yaml` with the path to your OpenAPI specification file.
+- Replace `path/to/openapi-generator-gauge-plugin-0.0.1-rc1.jar` with the location of the downloaded plugin JAR file.
+- Replace `path/to/your/openapi-spec.yaml` with the path to your OpenAPI specification file.
 
 This will generate a Python client along with the necessary step implementation files in the `python-sdk/` directory.
 
@@ -71,6 +71,8 @@ cp -r specs python-sdk
 
 Ensure your specs are in the correct directory, ready to be executed.
 
+**NOTE:** For details on how to write your Gauge specs for use with this plugin, see the [spec authoring guide](docs/spec-authoring.md).
+
 ### 5. Run the tests
 
 Navigate to the generated client folder and run your Gauge tests.
@@ -83,6 +85,10 @@ gauge run specs
 The tests will be executed against the generated client, and you can see the results of the API tests in the Gauge output.
 
 ## 🚀 Usage tips
+
+### Spec authoring
+
+See the [spec authoring guide](docs/spec-authoring.md) for details on how to write Gauge specs for use with this plugin.
 
 ### Running specs in multiple languages:
 
