@@ -18,7 +18,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: '3.14.4'
 
       - name: Install npm tools
         run: npm install -g @getgauge/cli@1.6.20 @stoplight/prism-cli@5.14.2 @openapitools/openapi-generator-cli@2.22.0
