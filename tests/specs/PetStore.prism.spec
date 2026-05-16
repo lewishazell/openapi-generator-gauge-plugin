@@ -66,6 +66,6 @@ This scenario tests the ability to list all pets matching specified tags, but wi
 This scenario ensures that a pet can be successfully added to the pet store.
 
 * Create an "addPet" request for the "DefaultApi"
-    * Give the "petDetails" parameter a JSON value of "{\"name\": \"Pickle\", \"tag\": \"cat\"}"
+    * Give the "PetDetails" parameter a JSON value of "{\"name\": \"Pickle\", \"tag\": \"cat\"}"
 * Send the request
 * The response status should be "200"

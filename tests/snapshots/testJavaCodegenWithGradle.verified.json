@@ -845,12 +845,12 @@
             },
             {
               "itemType": "step",
-              "stepText": "Give the \"petDetails\" parameter a JSON value of \"{\\\"name\\\": \\\"Pickle\\\", \\\"tag\\\": \\\"cat\\\"}\"",
+              "stepText": "Give the \"PetDetails\" parameter a JSON value of \"{\\\"name\\\": \\\"Pickle\\\", \\\"tag\\\": \\\"cat\\\"}\"",
               "parameters": [
                 {
                   "parameterType": "static",
                   "name": "",
-                  "value": "petDetails",
+                  "value": "PetDetails",
                   "table": null
                 },
                 {
