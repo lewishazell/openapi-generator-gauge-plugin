@@ -25,6 +25,9 @@ jobs:
       - name: Install jd
         run: go install github.com/josephburnett/jd/v2/jd@v2.3.0
 
-      - name: Test go codegen
-        run: ./test_codegen.sh --filter testGoCodegen
+      - name: Setup test filter
+        run: echo "FILTER=testGo*" >> $GITHUB_ENV
+
+      - name: Run go tests
+        run: ./test_codegen.sh && ./test_auth.sh
         working-directory: tests

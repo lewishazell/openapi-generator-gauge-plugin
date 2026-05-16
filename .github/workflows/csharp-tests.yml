@@ -29,6 +29,9 @@ jobs:
       - name: Install jd
         run: go install github.com/josephburnett/jd/v2/jd@v2.3.0
 
-      - name: Test csharp codegen
-        run: ./test_codegen.sh --filter testCSharpCodegen
+      - name: Setup test filter
+        run: echo "FILTER=testCSharp*" >> $GITHUB_ENV
+
+      - name: Run csharp tests
+        run: ./test_codegen.sh && ./test_auth.sh
         working-directory: tests
