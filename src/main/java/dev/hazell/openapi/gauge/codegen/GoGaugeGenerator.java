@@ -2,10 +2,7 @@ package dev.hazell.openapi.gauge.codegen;
 
 import org.openapitools.codegen.*;
 import org.openapitools.codegen.languages.*;
-import org.openapitools.codegen.model.*;
-import io.swagger.models.properties.*;
 
-import java.util.*;
 import java.io.File;
 
 public class GoGaugeGenerator extends GoClientCodegen {
