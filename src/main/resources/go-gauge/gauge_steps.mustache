@@ -302,9 +302,11 @@ func safeCast[T any](value interface{}) T {
 func init() {
 	targetHost := os.Getenv("gauge_target_host")
     accessToken := os.Getenv("gauge_access_token")
-    securityScheme := os.Getenv("gauge_security_scheme")
     apiKey := os.Getenv("gauge_api_key")
+    {{#hasApiKeyMethods}}
+    securityScheme := os.Getenv("gauge_security_scheme")
     apiKeyPrefix := os.Getenv("gauge_api_key_prefix")
+    {{/hasApiKeyMethods}}
 
     ctx := context.Background()
 
@@ -328,7 +330,7 @@ func init() {
         ctx = context.WithValue(ctx, {{goImportAlias}}.ContextAccessToken, accessToken)
 		{{/hasHttpBearerMethods}}
         {{^hasHttpBearerMethods}}
-        T.Fail(errors.New("an access token has been set but the OpenAPI specification has no HTTP bearer authentication methods")
+        T.Fail(errors.New("an access token has been set but the OpenAPI specification has no HTTP bearer authentication methods"))
         return
         {{/hasHttpBearerMethods}}
     }
@@ -348,7 +350,7 @@ func init() {
         })
         {{/hasApiKeyMethods}}
     	{{^hasApiKeyMethods}}
-        T.Fail(errors.New("an API key has been set but the OpenAPI specification has no API key authentication methods")
+        T.Fail(errors.New("an API key has been set but the OpenAPI specification has no API key authentication methods"))
         return
         {{/hasApiKeyMethods}}
     }
