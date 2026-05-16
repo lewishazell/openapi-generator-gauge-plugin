@@ -39,8 +39,9 @@ type request struct {
 
 type feature struct {
 	APIClient *{{goImportAlias}}.APIClient
-	Request *request
-	Response *http.Response
+	Request   *request
+	Response  *http.Response
+    Context   context.Context
 }
 
 func (f *feature) createARequestForTheApi(operationId string, classname string) {
@@ -183,7 +184,7 @@ func (f *feature) sendTheRequest() {
             }
 
             {{/pathParams}}
-            request := f.APIClient.{{classname}}.{{operationId}}(context.Background(){{#pathParams}}, safeCast[{{#isModel}}{{goImportAlias}}.{{/isModel}}{{{dataType}}}]({{paramName}}Param){{/pathParams}})
+            request := f.APIClient.{{classname}}.{{operationId}}(f.Context{{#pathParams}}, safeCast[{{#isModel}}{{goImportAlias}}.{{/isModel}}{{{dataType}}}]({{paramName}}Param){{/pathParams}})
             
             {{#allParams}}
             {{^isPathParam}}
@@ -299,27 +300,65 @@ func safeCast[T any](value interface{}) T {
 }
 
 func init() {
-	targetHost := os.Getenv("GAUGE_TARGET_HOST")
+	targetHost := os.Getenv("gauge_target_host")
+    accessToken := os.Getenv("gauge_access_token")
+    securityScheme := os.Getenv("gauge_security_scheme")
+    apiKey := os.Getenv("gauge_api_key")
+    apiKeyPrefix := os.Getenv("gauge_api_key_prefix")
+
+    ctx := context.Background()
+
 	if targetHost == "" {
 		targetHost = "{{gaugeTargetHost}}"
 	}
 
 	if targetHost == "" {
-		T.Fail(errors.New("missing required configuration: 'GAUGE_TARGET_HOST'. please set GAUGE_TARGET_HOST environment variable or pass -p gaugeTargetHost=http://your-api"))
+		T.Fail(errors.New("missing required configuration: 'gauge_target_host'. please set gauge_target_host environment variable or pass -p gaugeTargetHost=http://your-api"))
         return
 	}
 
 	targetUrl, err := url.Parse(targetHost)
 	if err != nil {
-		T.Fail(errors.New("Invalid GAUGE_TARGET_HOST: " + err.Error()))
+		T.Fail(errors.New("invalid gauge_target_host: " + err.Error()))
         return
 	}
+
+    if accessToken != "" {
+		{{#hasHttpBearerMethods}}
+        ctx = context.WithValue(ctx, {{goImportAlias}}.ContextAccessToken, accessToken)
+		{{/hasHttpBearerMethods}}
+        {{^hasHttpBearerMethods}}
+        T.Fail(errors.New("an access token has been set but the OpenAPI specification has no HTTP bearer authentication methods")
+        return
+        {{/hasHttpBearerMethods}}
+    }
+
+    if apiKey != "" {
+    	{{#hasApiKeyMethods}}
+        if securityScheme == "" {
+            T.Fail(errors.New("missing required configuration: 'gauge_security_scheme'. when using an API key, please also set the gauge_security_scheme environment variable"))
+            return
+        }
+
+        ctx = context.WithValue(ctx, {{goImportAlias}}.ContextAPIKeys, map[string]{{goImportAlias}}.APIKey{
+            securityScheme: {
+                Key:    apiKey,
+                Prefix: apiKeyPrefix,
+            },
+        })
+        {{/hasApiKeyMethods}}
+    	{{^hasApiKeyMethods}}
+        T.Fail(errors.New("an API key has been set but the OpenAPI specification has no API key authentication methods")
+        return
+        {{/hasApiKeyMethods}}
+    }
 
 	configuration := {{goImportAlias}}.NewConfiguration()
 	configuration.Scheme = targetUrl.Scheme
 	configuration.Host = targetUrl.Host
 	feat := &feature {
 		APIClient: {{goImportAlias}}.NewAPIClient(configuration),
+        Context: ctx,
 	}
 
     gauge.Step("Create a <operationId> request for the <classname>", feat.createARequestForTheApi)

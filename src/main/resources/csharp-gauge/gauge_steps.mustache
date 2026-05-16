@@ -44,17 +44,51 @@ namespace {{packageName}}.Test
         public StepImplementation()
         {
             var defaultHost = "{{gaugeTargetHost}}";
-            var targetHost = Environment.GetEnvironmentVariable("GAUGE_TARGET_HOST") ?? defaultHost;
+            var targetHost = Environment.GetEnvironmentVariable("gauge_target_host") ?? defaultHost;
+            var accessToken = Environment.GetEnvironmentVariable("gauge_access_token")?.Trim();
+            var securityScheme = Environment.GetEnvironmentVariable("gauge_security_scheme")?.Trim();
+            var apiKey = Environment.GetEnvironmentVariable("gauge_api_key")?.Trim();
+            var apiKeyPrefix = Environment.GetEnvironmentVariable("gauge_api_key_prefix")?.Trim();
 
             if (string.IsNullOrWhiteSpace(targetHost))
             {
-                throw new InvalidOperationException("Missing required configuration: 'GAUGE_TARGET_HOST'. Please set the GAUGE_TARGET_HOST environment variable, or pass it at generation time with -p gaugeTargetHost=http://your-api");
+                throw new InvalidOperationException("Missing required configuration: 'gauge_target_host'. Please set the gauge_target_host environment variable, or pass it at generation time with -p gaugeTargetHost=http://your-api");
             }
 
             configuration = new Configuration
             {
                 BasePath = targetHost
             };
+
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                {{#hasHttpBearerMethods}}
+                configuration.AccessToken = accessToken;
+                {{/hasHttpBearerMethods}}
+                {{^hasHttpBearerMethods}}
+                throw new InvalidOperationException("An access token has been set but the OpenAPI specification has no HTTP bearer authentication methods");
+                {{/hasHttpBearerMethods}}
+            }
+
+            if (!string.IsNullOrWhiteSpace(apiKey))
+            {
+                {{#hasApiKeyMethods}}
+                if (string.IsNullOrWhiteSpace(securityScheme))
+                {
+                    throw new InvalidOperationException("Missing required configuration: 'gauge_security_scheme'. When using an API key, please also set the gauge_security_scheme environment variable");
+                }
+
+                configuration.ApiKey.Add(securityScheme, apiKey);
+            
+                if (!string.IsNullOrWhiteSpace(apiKeyPrefix))
+                {
+                    configuration.ApiKeyPrefix.Add(securityScheme, apiKeyPrefix);
+                }
+                {{/hasApiKeyMethods}}
+                {{^hasApiKeyMethods}}
+                throw new InvalidOperationException("An API key has been set but the OpenAPI specification has no API key authentication methods");
+                {{/hasApiKeyMethods}}
+            }
         }
 
         [Step("Create a <operationId> request for the <classname>")]

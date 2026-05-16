@@ -1,5 +1,6 @@
 import {{apiPackage}}.*;
 import {{modelPackage}}.*;
+import {{invokerPackage}}.auth.*;
 import {{invokerPackage}}.ApiClient;
 import {{invokerPackage}}.ApiException;
 import {{invokerPackage}}.ApiResponse;
@@ -30,17 +31,61 @@ public class StepImplementation {
 
     public StepImplementation() {
         String defaultHost = "{{gaugeTargetHost}}";
-        String targetHost = System.getenv("GAUGE_TARGET_HOST");
+        String targetHost = System.getenv("gauge_target_host");
+        String accessToken = System.getenv("gauge_access_token");
+        String securityScheme = System.getenv("gauge_security_scheme");
+        String apiKey = System.getenv("gauge_api_key");
+        String apiKeyPrefix = System.getenv("gauge_api_key_prefix");
 
-        if (targetHost == null || targetHost.isEmpty()) {
+        if (targetHost == null || targetHost.trim().isEmpty()) {
             targetHost = defaultHost;
         }
 
-        if (targetHost == null || targetHost.isEmpty()) {
-            throw new IllegalStateException("Missing required configuration: 'GAUGE_TARGET_HOST'. Please set the GAUGE_TARGET_HOST environment variable, or pass it during generation with -p gaugeTargetHost=http://your-api");
+        if (targetHost == null || targetHost.trim().isEmpty()) {
+            throw new IllegalStateException("Missing required configuration: 'gauge_target_host'. Please set the gauge_target_host environment variable, or pass it during generation with -p gaugeTargetHost=http://your-api");
         }
 
         apiClient.setBasePath(targetHost);
+
+        if (accessToken != null)
+        {
+            accessToken = accessToken.trim();
+
+            if(!accessToken.isEmpty())
+            {
+                {{#hasHttpBearerMethods}}
+                apiClient.setBearerToken(accessToken);
+                {{/hasHttpBearerMethods}}
+                {{^hasHttpBearerMethods}}
+                throw new UnsupportedOperationException("An access token has been set but the OpenAPI specification has no HTTP bearer authentication methods");
+                {{/hasHttpBearerMethods}}
+            }
+        }
+
+        if (apiKey != null) {
+            apiKey = apiKey.trim();
+
+            if (!apiKey.isEmpty()) {
+                {{#hasApiKeyMethods}}
+                if (securityScheme == null || securityScheme.trim().isEmpty())
+                {
+                    throw new UnsupportedOperationException("Missing required configuration: 'gauge_security_scheme'. When using an API key, please also set the gauge_security_scheme environment variable");
+                }
+
+                ApiKeyAuth auth = (ApiKeyAuth)apiClient.getAuthentication(securityScheme);
+
+                auth.setApiKey(apiKey);
+            
+                if (apiKeyPrefix != null && !(apiKeyPrefix = apiKeyPrefix.trim()).isEmpty())
+                {
+                    auth.setApiKeyPrefix(apiKeyPrefix);
+                }
+                {{/hasApiKeyMethods}}
+                {{^hasApiKeyMethods}}
+                throw new UnsupportedOperationException("An API key has been set but the OpenAPI specification has no API key authentication methods");
+                {{/hasApiKeyMethods}}
+            }
+        }
     }
 
     @Step("Create a <operationId> request for the <classname>")

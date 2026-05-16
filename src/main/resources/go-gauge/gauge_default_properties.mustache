@@ -25,8 +25,14 @@ csv_delimiter = ,
 allow_multiline_step = false
 
 # The base URL your API client will use in tests.
-# Can be overridden at runtime by setting the GAUGE_TARGET_HOST environment variable.
+# Can be overridden at runtime by setting the gauge_target_host environment variable.
 # For example:
-#   export GAUGE_TARGET_HOST=http://localhost:4010
+#   export gauge_target_host=http://localhost:4010
 # This value is injected by OpenAPI Generator via -p gaugeTargetHost=...
-GAUGE_TARGET_HOST = {{gaugeTargetHost}}
+gauge_target_host = {{gaugeTargetHost}}
+
+gauge_access_token = 
+
+gauge_security_scheme = 
+gauge_api_key = 
+gauge_api_key_prefix = 
