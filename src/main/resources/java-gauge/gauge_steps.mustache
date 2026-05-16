@@ -106,13 +106,13 @@ public class StepImplementation {
             {{#operation}}
             if ("{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}".equals(request.getOperationId())) {
                 {{#allParams}}
-                if ("{{paramName}}".equals(parameter)) {
+                if ("{{baseName}}".equals(parameter)) {
                     {{^isContainer}}
-                    request.getParameters().put("{{paramName}}", Converter.convertTo({{{dataType}}}.class, value));
+                    request.getParameters().put("{{baseName}}", Converter.convertTo({{{dataType}}}.class, value));
                     return;
                     {{/isContainer}}
                     {{#isContainer}}
-                    throw new IllegalArgumentException("Cannot set collection parameter {{paramName}} from String value");
+                    throw new IllegalArgumentException("Cannot set collection parameter {{baseName}} from String value");
                     {{/isContainer}}
                 }
                 {{^-last}}
@@ -139,7 +139,7 @@ public class StepImplementation {
             {{#operation}}
             if ("{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}".equals(request.getOperationId())) {
                 {{#allParams}}
-                if ("{{paramName}}".equals(parameter)) {
+                if ("{{baseName}}".equals(parameter)) {
                     {{^isContainer}}
                     Object deserialized = gson.fromJson(value, {{dataType}}.class);
                     {{/isContainer}}
@@ -147,7 +147,7 @@ public class StepImplementation {
                     Type type = TypeToken.getParameterized(List.class, {{baseType}}.class).getType();
                     Object deserialized = gson.fromJson(value, type);
                     {{/isContainer}}
-                    request.getParameters().put("{{paramName}}", deserialized);
+                    request.getParameters().put("{{baseName}}", deserialized);
                     return;
                 }
                 {{^-last}}
@@ -174,7 +174,7 @@ public class StepImplementation {
             {{#operation}}
                 if ("{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}".equals(request.getOperationId())) {
                 {{#allParams}}
-                if ("{{paramName}}".equals(parameter)) {
+                if ("{{baseName}}".equals(parameter)) {
                     {{#isContainer}}
                     {{{dataType}}} collection = new ArrayList<{{{baseType}}}>();
                     for (TableRow row : table.getTableRows()) {
@@ -182,11 +182,11 @@ public class StepImplementation {
                         collection.add(Converter.convertTo({{{baseType}}}.class, value));
                     }
 
-                    request.getParameters().put("{{paramName}}", collection);
+                    request.getParameters().put("{{baseName}}", collection);
                     return;
                     {{/isContainer}}
                     {{^isContainer}}
-                    throw new UnsupportedOperationException("Cannot read a DataTable into non-collection parameter {{#lambda.camelcase}}{{paramName}}{{/lambda.camelcase}}");
+                    throw new UnsupportedOperationException("Cannot read a DataTable into non-collection parameter {{baseName}}");
                     {{/isContainer}}
                 }
                 {{^-last}}
@@ -214,7 +214,7 @@ public class StepImplementation {
             {{#operations}}
             {{#operation}}
             if ("{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}".equals(request.getOperationId())) {
-                response = api.{{operationId}}WithHttpInfo({{#allParams}}({{{dataType}}})request.getParameters().get("{{paramName}}"){{^-last}}, {{/-last}}{{/allParams}});
+                response = api.{{operationId}}WithHttpInfo({{#allParams}}({{{dataType}}})request.getParameters().get("{{baseName}}"){{^-last}}, {{/-last}}{{/allParams}});
             }
             {{^-last}}
 

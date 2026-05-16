@@ -83,8 +83,8 @@ def give_the_parameter_a_value_of(parameter, value):
             pass
             {{/hasParams}}
             {{#allParams}}
-            if parameter == "{{#lambda.camelcase}}{{paramName}}{{/lambda.camelcase}}":
-                request.parameters["{{paramName}}"] = convert_to({{{dataType}}}, value)
+            if parameter == "{{baseName}}":
+                request.parameters["{{baseName}}"] = convert_to({{{dataType}}}, value)
                 return
             {{/allParams}}
         {{/operation}}
@@ -106,7 +106,7 @@ def give_the_parameter_a_json_value_of(parameter, value):
             pass
             {{/hasParams}}
             {{#allParams}}
-            if parameter == "{{#lambda.camelcase}}{{paramName}}{{/lambda.camelcase}}":
+            if parameter == "{{baseName}}":
                 {{#isModel}}
                 request.parameters[parameter] = {{modelPackage}}.{{{dataType}}}.from_json(value)
                 return
@@ -134,16 +134,16 @@ def give_the_parameter_the_following_values(parameter, table):
             pass
             {{/hasParams}}
             {{#allParams}}
-            if parameter == "{{#lambda.camelcase}}{{paramName}}{{/lambda.camelcase}}":
+            if parameter == "{{baseName}}":
                 {{#isContainer}}
                 collection = list[{{{baseType}}}]()
                 for row in table:
                     collection.append(convert_to({{{baseType}}}, row[0]))
-                request.parameters["{{paramName}}"] = collection
+                request.parameters["{{baseName}}"] = collection
                 return
                 {{/isContainer}}
                 {{^isContainer}}
-                raise TypeError("Cannot read a DataTable into parameter {{#lambda.camelcase}}{{paramName}}{{/lambda.camelcase}} as it is not an array")
+                raise TypeError("Cannot read a DataTable into parameter {{baseName}} as it is not an array")
                 {{/isContainer}}
             {{/allParams}}
         {{/operation}}
@@ -163,7 +163,7 @@ def send_the_request():
         {{#operations}}
         {{#operation}}
         if request.operation_id == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}":
-            test_context.response = api.{{operationId}}_with_http_info({{#allParams}}request.parameters.get("{{#lambda.camelcase}}{{paramName}}{{/lambda.camelcase}}"){{^-last}}, {{/-last}}{{/allParams}})
+            test_context.response = api.{{operationId}}_with_http_info({{#allParams}}request.parameters.get("{{baseName}}"){{^-last}}, {{/-last}}{{/allParams}})
         {{/operation}}
         {{/operations}}
     {{/apiInfo.apis}}

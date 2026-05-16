@@ -76,13 +76,13 @@ export class StepImplementation {
             {{#operation}}
             if (ctx.request.operationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}") {
                 {{#allParams}}
-                if (parameter == "{{paramName}}") {
+                if (parameter == "{{baseName}}") {
                     {{^isContainer}}
-                    ctx.request.parameters["{{paramName}}"] = value;
+                    ctx.request.parameters["{{baseName}}"] = value;
                     return;
                     {{/isContainer}}
                     {{#isContainer}}
-                    throw new Error("Cannot set collection parameter {{paramName}} from String value");
+                    throw new Error("Cannot set collection parameter {{baseName}} from String value");
                     {{/isContainer}}
                 }
                 {{^-last}}
@@ -109,8 +109,8 @@ export class StepImplementation {
             {{#operation}}
             if (ctx.request.operationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}") {
                 {{#allParams}}
-                if (parameter == "{{paramName}}") {
-                    ctx.request.parameters["{{paramName}}"] = JSON.parse(value);
+                if (parameter == "{{baseName}}") {
+                    ctx.request.parameters["{{baseName}}"] = JSON.parse(value);
                     return;
                 }
                 {{^-last}}
@@ -137,7 +137,7 @@ export class StepImplementation {
             {{#operation}}
             if (ctx.request.operationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}") {
                 {{#allParams}}
-                if (parameter == "{{paramName}}") {
+                if (parameter == "{{baseName}}") {
                     {{#isContainer}}
                     const collection: any[] = [];
                     for (const row of table.getTableRows()) {
@@ -145,11 +145,11 @@ export class StepImplementation {
                         collection.push(value);
                     }
 
-                    ctx.request.parameters["{{paramName}}"] = collection;
+                    ctx.request.parameters["{{baseName}}"] = collection;
                     return;
                     {{/isContainer}}
                     {{^isContainer}}
-                    throw new Error("Cannot read a DataTable into non-collection parameter {{#lambda.camelcase}}{{paramName}}{{/lambda.camelcase}}");
+                    throw new Error("Cannot read a DataTable into non-collection parameter {{baseName}}");
                     {{/isContainer}}
                 }
                 {{^-last}}
@@ -198,7 +198,7 @@ export class StepImplementation {
             {{#operations}}
             {{#operation}}
             if (ctx.request.operationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}") {
-                let { response, body } = await api.{{operationId}}({{#allParams}}ctx.request.parameters["{{paramName}}"]{{^-last}}, {{/-last}}{{/allParams}});
+                let { response, body } = await api.{{operationId}}({{#allParams}}ctx.request.parameters["{{baseName}}"]{{^-last}}, {{/-last}}{{/allParams}});
                 ctx.response = { message: response, body };
             }
             {{^-last}}

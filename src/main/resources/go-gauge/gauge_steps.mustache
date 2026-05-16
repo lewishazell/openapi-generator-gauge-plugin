@@ -59,14 +59,14 @@ func (f *feature) giveTheParameterAValueOf(param string, val string) {
         {{#operation}}
         if f.Request.OperationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}" {
             {{#allParams}}
-            if param == "{{#lambda.camelcase}}{{paramName}}{{/lambda.camelcase}}" {
+            if param == "{{#lambda.camelcase}}{{baseName}}{{/lambda.camelcase}}" {
                 conv, err := convertTo[{{#isModel}}{{goImportAlias}}.{{/isModel}}{{{dataType}}}](val)
                 if err != nil {
                     T.Fail(err)
                     return
                 }
 
-                f.Request.Parameters["{{paramName}}"] = conv
+                f.Request.Parameters["{{baseName}}"] = conv
 	            return
             }
             {{^-last}}
@@ -92,7 +92,7 @@ func (f *feature) giveTheParameterAJsonValueOf(param string, val string) {
         {{#operation}}
         if f.Request.OperationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}" {
             {{#allParams}}
-            if param == "{{paramName}}" {
+            if param == "{{baseName}}" {
                 var obj {{#isModel}}{{goImportAlias}}.{{/isModel}}{{{dataType}}}
                 err := json.Unmarshal([]byte(val), &obj)
                 if err != nil {
@@ -100,7 +100,7 @@ func (f *feature) giveTheParameterAJsonValueOf(param string, val string) {
                     return
                 }
 
-                f.Request.Parameters["{{paramName}}"] = obj
+                f.Request.Parameters["{{baseName}}"] = obj
                 return
             }
             {{^-last}}
@@ -126,7 +126,7 @@ func (f *feature) giveTheParameterTheFollowingValues(param string, table *m.Tabl
         {{#operation}}
         if f.Request.OperationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}" {
             {{#allParams}}
-            if param == "{{paramName}}" {
+            if param == "{{baseName}}" {
                 {{#isContainer}}
                 slice := []{{{baseType}}}{}
                 for _, row := range table.Rows {
@@ -139,11 +139,11 @@ func (f *feature) giveTheParameterTheFollowingValues(param string, table *m.Tabl
                     slice = append(slice, val)
                 }
 
-                f.Request.Parameters["{{paramName}}"] = slice
+                f.Request.Parameters["{{baseName}}"] = slice
                 return
                 {{/isContainer}}
                 {{^isContainer}}
-                T.Fail(errors.New("cannot read a Table into parameter {{#lambda.camelcase}}{{paramName}}{{/lambda.camelcase}} as it is not an array"))
+                T.Fail(errors.New("cannot read a Table into parameter {{baseName}} as it is not an array"))
                 return
                 {{/isContainer}}
             }
@@ -170,16 +170,16 @@ func (f *feature) sendTheRequest() {
         {{#operation}}
         if f.Request.OperationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}" {
             {{#pathParams}}
-            var {{paramName}}Param any
+            var {{baseName}}Param any
             {{#-last}}
 
             {{/-last}}
             {{/pathParams}}
             {{#pathParams}}
-            if val, ok := f.Request.Parameters["{{paramName}}"]; ok {
+            if val, ok := f.Request.Parameters["{{baseName}}"]; ok {
                 {{paramName}}Param = val
             } else {
-                T.Fail(errors.New("parameter \"{{paramName}}\" is required"))
+                T.Fail(errors.New("parameter \"{{baseName}}\" is required"))
                 return
             }
 
@@ -188,7 +188,7 @@ func (f *feature) sendTheRequest() {
             
             {{#allParams}}
             {{^isPathParam}}
-            if val, ok := f.Request.Parameters["{{paramName}}"]; ok {
+            if val, ok := f.Request.Parameters["{{baseName}}"]; ok {
                 request = request.{{#lambda.pascalcase}}{{paramName}}{{/lambda.pascalcase}}(safeCast[{{#isModel}}{{goImportAlias}}.{{/isModel}}{{{dataType}}}](val))
             }
 
