@@ -156,7 +156,7 @@ scrubGaugeReport() {
         .specResults |= map(
             del(.timestampISO, .executionTime, .fileName) |
             .scenarios |= map(
-                del(.executionTime) |
+                del(.executionTime, .retriesCount) |
                 .items |= map(
                     .result |= del(.stackTrace, .executionTime, .screenshot, .ScreenshotFile, .errorMessage, .messages, .skippedReason)
                 )
