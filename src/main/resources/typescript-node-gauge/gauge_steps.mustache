@@ -13,6 +13,7 @@ import * as http from 'http';
 import * as assert from 'assert';
 import { BeforeSuite, Step, Table } from "gauge-ts";
 import * as contentType from 'content-type';
+import { ObjectSerializer } from '../model/models';
 
 class TestContext {
     public request: Request;
@@ -110,8 +111,13 @@ export class StepImplementation {
             if (ctx.request.operationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}") {
                 {{#allParams}}
                 if (parameter == "{{baseName}}") {
-                    ctx.request.parameters["{{baseName}}"] = JSON.parse(value);
+                    {{^isFile}}
+                    ctx.request.parameters["{{baseName}}"] = ObjectSerializer.deserialize(JSON.parse(value), "{{dataType}}");
                     return;
+                    {{/isFile}}
+                    {{#isFile}}
+                    throw new Error("Cannot set file parameter {{baseName}} from JSON value");
+                    {{/isFile}}
                 }
                 {{^-last}}
 
