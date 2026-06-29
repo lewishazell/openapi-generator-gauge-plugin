@@ -60,14 +60,14 @@ func (f *feature) giveTheParameterAValueOf(param string, val string) {
         if f.Request.OperationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}" {
             {{#allParams}}
             if param == "{{#lambda.camelcase}}{{baseName}}{{/lambda.camelcase}}" {
-                conv, err := convertTo[{{#isModel}}{{goImportAlias}}.{{/isModel}}{{{dataType}}}](val)
+                conv, err := convertTo[{{#isModel}}{{goImportAlias}}.{{/isModel}}{{^isModel}}{{#isEnumRef}}{{goImportAlias}}.{{/isEnumRef}}{{/isModel}}{{{dataType}}}](val)
                 if err != nil {
                     T.Fail(err)
                     return
                 }
 
                 f.Request.Parameters["{{baseName}}"] = conv
-	            return
+            	return
             }
             {{^-last}}
 
@@ -93,7 +93,7 @@ func (f *feature) giveTheParameterAJsonValueOf(param string, val string) {
         if f.Request.OperationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}" {
             {{#allParams}}
             if param == "{{baseName}}" {
-                var obj {{#isModel}}{{goImportAlias}}.{{/isModel}}{{{dataType}}}
+                var obj {{#isModel}}{{goImportAlias}}.{{/isModel}}{{^isModel}}{{#isEnumRef}}{{goImportAlias}}.{{/isEnumRef}}{{/isModel}}{{{dataType}}}
                 err := json.Unmarshal([]byte(val), &obj)
                 if err != nil {
                     T.Fail(err)
@@ -127,6 +127,11 @@ func (f *feature) giveTheParameterTheFollowingValues(param string, table *m.Tabl
         if f.Request.OperationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}" {
             {{#allParams}}
             if param == "{{baseName}}" {
+                {{#isFile}}
+                T.Fail(errors.New("The file parameter {{baseName}} cannot be set to a constant value"))
+                return
+                {{/isFile}}
+                {{^isFile}}
                 {{#isContainer}}
                 slice := []{{{baseType}}}{}
                 for _, row := range table.Rows {
@@ -146,6 +151,7 @@ func (f *feature) giveTheParameterTheFollowingValues(param string, table *m.Tabl
                 T.Fail(errors.New("cannot read a Table into parameter {{baseName}} as it is not an array"))
                 return
                 {{/isContainer}}
+                {{/isFile}}
             }
             {{^-last}}
 
@@ -184,12 +190,12 @@ func (f *feature) sendTheRequest() {
             }
 
             {{/pathParams}}
-            request := f.APIClient.{{classname}}.{{operationId}}(f.Context{{#pathParams}}, safeCast[{{#isModel}}{{goImportAlias}}.{{/isModel}}{{{dataType}}}]({{paramName}}Param){{/pathParams}})
+            request := f.APIClient.{{classname}}.{{operationId}}(f.Context{{#pathParams}}, safeCast[{{#isModel}}{{goImportAlias}}.{{/isModel}}{{^isModel}}{{#isEnumRef}}{{goImportAlias}}.{{/isEnumRef}}{{/isModel}}{{{dataType}}}]({{paramName}}Param){{/pathParams}})
             
             {{#allParams}}
             {{^isPathParam}}
             if val, ok := f.Request.Parameters["{{baseName}}"]; ok {
-                request = request.{{#lambda.pascalcase}}{{paramName}}{{/lambda.pascalcase}}(safeCast[{{#isModel}}{{goImportAlias}}.{{/isModel}}{{{dataType}}}](val))
+                request = request.{{#lambda.pascalcase}}{{paramName}}{{/lambda.pascalcase}}(safeCast[{{#isModel}}{{goImportAlias}}.{{/isModel}}{{^isModel}}{{#isEnumRef}}{{goImportAlias}}.{{/isEnumRef}}{{/isModel}}{{{dataType}}}](val))
             }
 
             {{/isPathParam}}
