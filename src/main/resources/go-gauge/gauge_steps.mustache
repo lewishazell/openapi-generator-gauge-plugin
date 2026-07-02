@@ -230,6 +230,42 @@ func (f *feature) theResponseStatusShouldBe(statusCode string) {
 	}
 }
 
+func containsSubtree(actual, expected interface{}) bool {
+    switch e := expected.(type) {
+    case map[string]interface{}:
+        a, ok := actual.(map[string]interface{})
+        if !ok {
+            return false
+        }
+        for k, v := range e {
+            if !containsSubtree(a[k], v) {
+                return false
+            }
+        }
+        return true
+    case []interface{}:
+        a, ok := actual.([]interface{})
+        if !ok {
+            return false
+        }
+        for _, ev := range e {
+            found := false
+            for _, av := range a {
+                if containsSubtree(av, ev) {
+                    found = true
+                    break
+                }
+            }
+            if !found {
+                return false
+            }
+        }
+        return true
+    default:
+        return reflect.DeepEqual(actual, expected)
+    }
+}
+
 func (f *feature) theResponseContentShouldBe(content string) {
     mediaType, _, err := mime.ParseMediaType(strings.ToLower(f.Response.Header.Get("Content-Type")))
     if err != nil {
@@ -258,6 +294,41 @@ func (f *feature) theResponseContentShouldBe(content string) {
         
         if !reflect.DeepEqual(expected, actual) {
             T.Fail(fmt.Errorf("expected JSON response content to be '%s', but got '%s'", content, string(read)))
+            return
+        }
+    } else {
+        T.Fail(fmt.Errorf("cannot assert against unsupported media type: %s", mediaType))
+    }
+}
+
+func (f *feature) theResponseContentShouldContainTheSubtree(content string) {
+    mediaType, _, err := mime.ParseMediaType(strings.ToLower(f.Response.Header.Get("Content-Type")))
+    if err != nil {
+        T.Fail(fmt.Errorf("failed to parse media type: %v", err))
+        return
+    }
+
+    read, err := io.ReadAll(f.Response.Body)
+    if err != nil {
+        T.Fail(fmt.Errorf("failed to read response body: %v", err))
+        return
+    }
+
+    if mediaType == "application/json" {
+        var expected, actual interface{}
+
+        if err := json.Unmarshal([]byte(content), &expected); err != nil {
+            T.Fail(fmt.Errorf("failed to unmarshal expected JSON: %v", err))
+            return
+        }
+
+        if err := json.Unmarshal(read, &actual); err != nil {
+            T.Fail(fmt.Errorf("failed to unmarshal actual JSON: %v", err))
+            return
+        }
+        
+        if !containsSubtree(actual, expected) {
+            T.Fail(fmt.Errorf("response does not contain the expected subtree: %s", content))
             return
         }
     } else {
@@ -377,4 +448,5 @@ func init() {
     gauge.Step("Send the request", feat.sendTheRequest)
     gauge.Step("The response status should be <statusCode>", feat.theResponseStatusShouldBe)
     gauge.Step("The response content should be <content>", feat.theResponseContentShouldBe)
+    gauge.Step("The response content should contain the subtree:", feat.theResponseContentShouldContainTheSubtree)
 }
