@@ -66,7 +66,7 @@ This scenario tests the ability to list all pets matching specified tags, but wi
 This scenario ensures that a pet can be successfully added to the pet store.
 
 * Create an "addPet" request for the "DefaultApi"
-    * Give the "PetDetails" parameter a JSON value of "{"name": "Pickle", "tag": "cat"}"
+    * Give the "PetDetails" parameter a JSON value of: "{\"name\": \"Pickle\", \"tag\": \"cat\"}"
 * Send the request
 * The response status should be "200"
 
@@ -78,7 +78,7 @@ This scenario ensures that the response contains specific fields (e.g., "name" a
     * Give the "id" parameter a value of "1"
 * Send the request
 * The response status should be "200"
-* The response content should contain the subtree: \{"name":"string","tag":"string"\}
+* The response content should contain the subtree: "{\"name\":\"string\",\"tag\":\"string\"}"
 
 
 ## Verify pet response contains nested subtree
@@ -88,7 +88,7 @@ This scenario ensures that the response contains a nested subtree (e.g., a "cate
     * Give the "id" parameter a value of "1"
 * Send the request
 * The response status should be "200"
-* The response content should contain the subtree: \{"tag":"string"\}
+* The response content should contain the subtree: "{\"tag\":\"string\"}"
 
 
 ## Verify pet list response contains at least one matching pet
@@ -101,4 +101,4 @@ This scenario ensures that a list response contains at least one pet with specif
         | cat   |
 * Send the request
 * The response status should be "200"
-* The response content should contain the subtree: \[{"name":"string"}\]
+* The response content should contain the subtree: "[{\"name\":\"string\"}]"
