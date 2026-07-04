@@ -85,10 +85,7 @@ See your generated client code to confirm actual names.
 #### JSON body value:
 
 ```
-* Give the "petDetails" parameter a JSON value of:
-    """
-    { "name": "Pickle", "tag": "cat" }
-    """
+* Give the "petDetails" parameter a JSON value of: "{\"name\": \"Pickle\", \"tag\": \"cat\"}"
 ```
 
 #### Multi-value array (e.g. query arrays:)
@@ -155,10 +152,7 @@ JSON content assertions use semantic equality, meaning:
 
 #### Partial Matching (subtree contains):
 ```
-* The response content should contain the subtree:
-    """
-    { "name": "Pickle", "tag": "cat" }
-    """
+* The response content should contain the subtree: "{\"name\":\"Pickle\",\"tag\":\"cat\"}"
 ```
 
 The **subtree contains** assertion checks if the expected subtree exists within the actual response, ignoring extra fields. This is useful for:
@@ -207,7 +201,7 @@ This scenario ensures that the user can successfully retrieve a pet from the sto
 |-------------------------|------------------------------------------------------------------------------------------------------|
 | Multiple requests       | You can issue multiple requests in a scenario. Just follow the create “params” sequence for each.    |
 | Step ordering           | Steps must follow the defined sequence. For example, assertions before sending a request will fail.  |
-| Partial JSON matching   | In addition to full-body JSON comparisons, you can assert that the response contains a **JSON subtree** (a subset of fields or nested structures). This is useful for ignoring volatile fields like IDs or timestamps. See the "Assert on the Response" section for details. |
+| Partial JSON matching   | In addition to full-body JSON comparisons, you can assert that the response contains a **JSON subtree** (a subset of fields or nested structures). This is useful for ignoring volatile fields like IDs or timestamps. See the "Assert on the Response" section for details. **Note:** JSON subtree assertions and JSON parameter values must be wrapped in quotes in `.spec` files (e.g., `* The response content should contain the subtree: "{\"name\":\"string\"}"`). |
 | API class name fallback | If an OpenAPI operation has no tags, it defaults to `DefaultApi`.                                    |
 
 ## Tips
