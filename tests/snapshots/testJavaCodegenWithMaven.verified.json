@@ -1011,7 +1011,7 @@
             },
             {
               "itemType": "step",
-              "stepText": "The response content should contain the subtree: \"{\\\"name\\\":\\\"string\\\",\\\"tag\\\":\\\"string\\\"}\"",
+              "stepText": "The response content should contain the subtree \"{\\\"name\\\":\\\"string\\\",\\\"tag\\\":\\\"string\\\"}\"",
               "parameters": [
                 {
                   "parameterType": "static",
@@ -1136,7 +1136,7 @@
             },
             {
               "itemType": "step",
-              "stepText": "The response content should contain the subtree: \"{\\\"tag\\\":\\\"string\\\"}\"",
+              "stepText": "The response content should contain the subtree \"{\\\"tag\\\":\\\"string\\\"}\"",
               "parameters": [
                 {
                   "parameterType": "static",
@@ -1283,7 +1283,7 @@
             },
             {
               "itemType": "step",
-              "stepText": "The response content should contain the subtree: \"[{\\\"name\\\":\\\"string\\\"}]\"",
+              "stepText": "The response content should contain the subtree \"[{\\\"name\\\":\\\"string\\\"}]\"",
               "parameters": [
                 {
                   "parameterType": "static",

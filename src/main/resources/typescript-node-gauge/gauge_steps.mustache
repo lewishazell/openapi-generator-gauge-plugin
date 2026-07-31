@@ -258,7 +258,7 @@ export class StepImplementation {
         }
     }
 
-    @Step("The response content should contain the subtree: <content>")
+    @Step("The response content should contain the subtree <content>")
     public theResponseContentShouldContainTheSubtree(content: string) {
         const { type } = contentType.parse(ctx.response.message.headers["content-type"]);
 

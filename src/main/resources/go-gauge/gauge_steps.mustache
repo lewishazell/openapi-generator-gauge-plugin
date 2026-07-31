@@ -492,5 +492,5 @@ func init() {
     gauge.Step("Send the request", feat.sendTheRequest)
     gauge.Step("The response status should be <statusCode>", feat.theResponseStatusShouldBe)
     gauge.Step("The response content should be <content>", feat.theResponseContentShouldBe)
-    gauge.Step("The response content should contain the subtree:", feat.theResponseContentShouldContainTheSubtree)
+    gauge.Step("The response content should contain the subtree <content>", feat.theResponseContentShouldContainTheSubtree)
 }
