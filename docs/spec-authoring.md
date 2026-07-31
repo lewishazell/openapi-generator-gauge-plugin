@@ -108,6 +108,27 @@ The plugin automatically coerces string values into the following types as defin
 
 Type errors will be thrown if the string is in the incorrect format or coersion is not possible.
 
+#### JSON value from the previous response (JSON Path chaining):
+
+```
+* the "id" parameter is "$.id" from the previous response
+```
+
+This step extracts a value from a prior response using a JSON Path expression and uses it as a parameter value in the current request:
+
+- `id` is the parameter name in the current request
+- `$.id` is the JSON Path expression to extract the `id` field from the previous response
+
+**Requirements:**
+- There must be a previous response in the scenario
+- The previous response must contain valid JSON
+- The JSON Path expression must return a non-empty result
+
+**Error Cases:**
+- No previous response exists
+- Previous response is not valid JSON
+- JSON Path expression returns no matching values
+
 ### 3. Send the Request
 
 ```
@@ -202,6 +223,7 @@ This scenario ensures that the user can successfully retrieve a pet from the sto
 | Multiple requests       | You can issue multiple requests in a scenario. Just follow the create “params” sequence for each.    |
 | Step ordering           | Steps must follow the defined sequence. For example, assertions before sending a request will fail.  |
 | Partial JSON matching   | In addition to full-body JSON comparisons, you can assert that the response contains a **JSON subtree** (a subset of fields or nested structures). This is useful for ignoring volatile fields like IDs or timestamps. See the "Assert on the Response" section for details. **Note:** JSON subtree assertions and JSON parameter values must be wrapped in quotes in `.spec` files (e.g., `* The response content should contain the subtree: "{\"name\":\"string\"}"`). |
+| JSON Path chaining      | Values from a previous response can be chained to a subsequent request using JSON Path (e.g., `* the "id" parameter is "$.id" from the previous response`). The previous response must contain valid JSON and the JSON Path expression must return a result. |
 | API class name fallback | If an OpenAPI operation has no tags, it defaults to `DefaultApi`.                                    |
 
 ## Tips
