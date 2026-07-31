@@ -121,6 +121,9 @@ scrubGaugeReport() {
                 del(.executionTime, .retriesCount) |
                 .items |= map(
                     .result |= del(.stackTrace, .executionTime, .screenshot, .ScreenshotFile, .errorMessage, .messages, .skippedReason)
+                ) |
+                .skipErrors |= map(
+                    sub("^.*/tests/out/specs/PetStore.prism.spec:"; "tests/specs/PetStore.prism.spec:")
                 )
             )
         )

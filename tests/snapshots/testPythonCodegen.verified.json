@@ -1036,7 +1036,7 @@
           "afterScenarioHookFailure": null,
           "afterScenarioHookMessages": [],
           "skipErrors": [
-            "/home/lewis/source/repos/openapi-generator-gauge-plugin/tests/out/specs/PetStore.prism.spec:81 Step implementation not found => 'The response content should contain the subtree \"{\\\"name\\\":\\\"string\\\",\\\"tag\\\":\\\"string\\\"}\"'"
+            "tests/specs/PetStore.prism.spec:81 Step implementation not found => 'The response content should contain the subtree \"{\\\"name\\\":\\\"string\\\",\\\"tag\\\":\\\"string\\\"}\"'"
           ],
           "tableRowIndex": -1
         },
@@ -1163,7 +1163,7 @@
           "afterScenarioHookFailure": null,
           "afterScenarioHookMessages": [],
           "skipErrors": [
-            "/home/lewis/source/repos/openapi-generator-gauge-plugin/tests/out/specs/PetStore.prism.spec:91 Step implementation not found => 'The response content should contain the subtree \"{\\\"tag\\\":\\\"string\\\"}\"'"
+            "tests/specs/PetStore.prism.spec:91 Step implementation not found => 'The response content should contain the subtree \"{\\\"tag\\\":\\\"string\\\"}\"'"
           ],
           "tableRowIndex": -1
         },
@@ -1312,7 +1312,7 @@
           "afterScenarioHookFailure": null,
           "afterScenarioHookMessages": [],
           "skipErrors": [
-            "/home/lewis/source/repos/openapi-generator-gauge-plugin/tests/out/specs/PetStore.prism.spec:104 Step implementation not found => 'The response content should contain the subtree \"[{\\\"name\\\":\\\"string\\\"}]\"'"
+            "tests/specs/PetStore.prism.spec:104 Step implementation not found => 'The response content should contain the subtree \"[{\\\"name\\\":\\\"string\\\"}]\"'"
           ],
           "tableRowIndex": -1
         },
