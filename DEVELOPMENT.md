@@ -63,7 +63,7 @@ cd tests
 
 Add the step to `tests/specs/PetStore.prism.spec` (or other mock spec files). Example:
 
-```gherkin
+```markdown
 * the "id" parameter is "$.id" from the previous response
 ```
 
@@ -120,7 +120,7 @@ Update the language-specific dependency file (e.g., `pom.mustache` for Java, `pa
 
 ### Example
 
-```gherkin
+```markdown
 ## Chain JSON response data to request parameters using JSON Path
 This scenario verifies that a value from a previous response can be chained to a subsequent request using JSON Path.
 
