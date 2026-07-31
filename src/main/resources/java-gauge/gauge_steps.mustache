@@ -26,7 +26,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class StepImplementation {
-    private static Gson gson = new Gson();
+    private static Gson gson = {{invokerPackage}}.JSON.getGson();
     private Request request;
     private ApiResponse<?> response;
     private ApiResponse<?> previousResponse;
@@ -235,7 +235,7 @@ public class StepImplementation {
             }
             
             Object value = JsonPath.read(jsonData, jsonPath);
-            request.getParameters().put(parameter, value);
+            giveTheParameterAValueOf(parameter, String.valueOf(value));
         } catch (PathNotFoundException e) {
             throw new IllegalStateException("No value found for JSON Path: " + jsonPath, e);
         }
