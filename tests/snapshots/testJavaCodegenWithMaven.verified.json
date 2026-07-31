@@ -812,7 +812,7 @@
         {
           "scenarioHeading": "Successfully add a pet to the pet store",
           "tags": [],
-          "executionStatus": "skipped",
+          "executionStatus": "passed",
           "contexts": [],
           "teardowns": [],
           "items": [
@@ -839,13 +839,13 @@
               "afterStepHookFailure": null,
               "afterStepHookMessages": [],
               "result": {
-                "status": "not executed",
+                "status": "passed",
                 "errorType": "assertion"
               }
             },
             {
               "itemType": "step",
-              "stepText": "Give the \"PetDetails\" parameter a JSON value of: \"{\\\"name\\\": \\\"Pickle\\\", \\\"tag\\\": \\\"cat\\\"}\"",
+              "stepText": "Give the \"PetDetails\" parameter a JSON value of \"{\\\"name\\\": \\\"Pickle\\\", \\\"tag\\\": \\\"cat\\\"}\"",
               "parameters": [
                 {
                   "parameterType": "static",
@@ -866,7 +866,7 @@
               "afterStepHookFailure": null,
               "afterStepHookMessages": [],
               "result": {
-                "status": "skipped",
+                "status": "passed",
                 "errorType": "assertion"
               }
             },
@@ -880,7 +880,7 @@
               "afterStepHookFailure": null,
               "afterStepHookMessages": [],
               "result": {
-                "status": "not executed",
+                "status": "passed",
                 "errorType": "assertion"
               }
             },
@@ -901,7 +901,7 @@
               "afterStepHookFailure": null,
               "afterStepHookMessages": [],
               "result": {
-                "status": "not executed",
+                "status": "passed",
                 "errorType": "assertion"
               }
             }
@@ -910,9 +910,7 @@
           "beforeScenarioHookMessages": [],
           "afterScenarioHookFailure": null,
           "afterScenarioHookMessages": [],
-          "skipErrors": [
-            "/home/lewis/source/repos/openapi-generator-gauge-plugin/tests/out/specs/PetStore.prism.spec:69 Step implementation not found => 'Give the \"PetDetails\" parameter a JSON value of: \"{\\\"name\\\": \\\"Pickle\\\", \\\"tag\\\": \\\"cat\\\"}\"'"
-          ],
+          "skipErrors": [],
           "tableRowIndex": -1
         },
         {
@@ -1311,6 +1309,199 @@
           "afterScenarioHookMessages": [],
           "skipErrors": [],
           "tableRowIndex": -1
+        },
+        {
+          "scenarioHeading": "Chain JSON response data to request parameters using JSON Path",
+          "tags": [],
+          "executionStatus": "passed",
+          "contexts": [],
+          "teardowns": [],
+          "items": [
+            {
+              "itemType": "step",
+              "stepText": "Create an \"addPet\" request for the \"DefaultApi\"",
+              "parameters": [
+                {
+                  "parameterType": "static",
+                  "name": "",
+                  "value": "addPet",
+                  "table": null
+                },
+                {
+                  "parameterType": "static",
+                  "name": "",
+                  "value": "DefaultApi",
+                  "table": null
+                }
+              ],
+              "table": null,
+              "beforeStepHookFailure": null,
+              "beforeStepHookMessages": [],
+              "afterStepHookFailure": null,
+              "afterStepHookMessages": [],
+              "result": {
+                "status": "passed",
+                "errorType": "assertion"
+              }
+            },
+            {
+              "itemType": "step",
+              "stepText": "Give the \"PetDetails\" parameter a JSON value of \"{\\\"name\\\": \\\"Pickle\\\", \\\"tag\\\": \\\"cat\\\"}\"",
+              "parameters": [
+                {
+                  "parameterType": "static",
+                  "name": "",
+                  "value": "PetDetails",
+                  "table": null
+                },
+                {
+                  "parameterType": "static",
+                  "name": "",
+                  "value": "{\"name\": \"Pickle\", \"tag\": \"cat\"}",
+                  "table": null
+                }
+              ],
+              "table": null,
+              "beforeStepHookFailure": null,
+              "beforeStepHookMessages": [],
+              "afterStepHookFailure": null,
+              "afterStepHookMessages": [],
+              "result": {
+                "status": "passed",
+                "errorType": "assertion"
+              }
+            },
+            {
+              "itemType": "step",
+              "stepText": "Send the request",
+              "parameters": [],
+              "table": null,
+              "beforeStepHookFailure": null,
+              "beforeStepHookMessages": [],
+              "afterStepHookFailure": null,
+              "afterStepHookMessages": [],
+              "result": {
+                "status": "passed",
+                "errorType": "assertion"
+              }
+            },
+            {
+              "itemType": "step",
+              "stepText": "The response status should be \"200\"",
+              "parameters": [
+                {
+                  "parameterType": "static",
+                  "name": "",
+                  "value": "200",
+                  "table": null
+                }
+              ],
+              "table": null,
+              "beforeStepHookFailure": null,
+              "beforeStepHookMessages": [],
+              "afterStepHookFailure": null,
+              "afterStepHookMessages": [],
+              "result": {
+                "status": "passed",
+                "errorType": "assertion"
+              }
+            },
+            {
+              "itemType": "step",
+              "stepText": "Create a \"findPetById\" request for the \"DefaultApi\"",
+              "parameters": [
+                {
+                  "parameterType": "static",
+                  "name": "",
+                  "value": "findPetById",
+                  "table": null
+                },
+                {
+                  "parameterType": "static",
+                  "name": "",
+                  "value": "DefaultApi",
+                  "table": null
+                }
+              ],
+              "table": null,
+              "beforeStepHookFailure": null,
+              "beforeStepHookMessages": [],
+              "afterStepHookFailure": null,
+              "afterStepHookMessages": [],
+              "result": {
+                "status": "passed",
+                "errorType": "assertion"
+              }
+            },
+            {
+              "itemType": "step",
+              "stepText": "the \"id\" parameter is \"$.id\" from the previous response",
+              "parameters": [
+                {
+                  "parameterType": "static",
+                  "name": "",
+                  "value": "id",
+                  "table": null
+                },
+                {
+                  "parameterType": "static",
+                  "name": "",
+                  "value": "$.id",
+                  "table": null
+                }
+              ],
+              "table": null,
+              "beforeStepHookFailure": null,
+              "beforeStepHookMessages": [],
+              "afterStepHookFailure": null,
+              "afterStepHookMessages": [],
+              "result": {
+                "status": "passed",
+                "errorType": "assertion"
+              }
+            },
+            {
+              "itemType": "step",
+              "stepText": "Send the request",
+              "parameters": [],
+              "table": null,
+              "beforeStepHookFailure": null,
+              "beforeStepHookMessages": [],
+              "afterStepHookFailure": null,
+              "afterStepHookMessages": [],
+              "result": {
+                "status": "passed",
+                "errorType": "assertion"
+              }
+            },
+            {
+              "itemType": "step",
+              "stepText": "The response status should be \"200\"",
+              "parameters": [
+                {
+                  "parameterType": "static",
+                  "name": "",
+                  "value": "200",
+                  "table": null
+                }
+              ],
+              "table": null,
+              "beforeStepHookFailure": null,
+              "beforeStepHookMessages": [],
+              "afterStepHookFailure": null,
+              "afterStepHookMessages": [],
+              "result": {
+                "status": "passed",
+                "errorType": "assertion"
+              }
+            }
+          ],
+          "beforeScenarioHookFailure": null,
+          "beforeScenarioHookMessages": [],
+          "afterScenarioHookFailure": null,
+          "afterScenarioHookMessages": [],
+          "skipErrors": [],
+          "tableRowIndex": -1
         }
       ],
       "isTableDriven": false,
@@ -1319,9 +1510,9 @@
       "beforeSpecHookMessages": [],
       "afterSpecHookFailure": null,
       "afterSpecHookMessages": [],
-      "passedScenarioCount": 7,
+      "passedScenarioCount": 9,
       "failedScenarioCount": 2,
-      "skippedScenarioCount": 1
+      "skippedScenarioCount": 0
     }
   ],
   "beforeSuiteHookFailure": null,
@@ -1331,7 +1522,7 @@
   "passedSpecsCount": 0,
   "failedSpecsCount": 1,
   "skippedSpecsCount": 0,
-  "passedScenariosCount": 7,
+  "passedScenariosCount": 9,
   "failedScenariosCount": 2,
-  "skippedScenariosCount": 1
+  "skippedScenariosCount": 0
 }
