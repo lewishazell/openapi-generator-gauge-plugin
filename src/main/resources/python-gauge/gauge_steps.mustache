@@ -234,7 +234,7 @@ def contains_subtree(actual, expected):
         return actual == expected
 
 
-@step("the response content should contain the subtree <content>")
+@step("The response content should contain the subtree <content>")
 def then_the_response_should_contain_the_json_subtree(content):
     content_type = ""
     if test_context.response.headers is not None:
