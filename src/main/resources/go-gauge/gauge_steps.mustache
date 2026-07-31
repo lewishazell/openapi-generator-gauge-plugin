@@ -24,11 +24,13 @@ import (
 	"reflect"
 	"strconv"
     "strings"
+    "bytes"
 
     "github.com/getgauge-contrib/gauge-go/gauge"
     m "github.com/getgauge-contrib/gauge-go/models"
 	. "github.com/getgauge-contrib/gauge-go/testsuit"
 	{{goImportAlias}} "{{gitHost}}/{{gitUserId}}/{{gitRepoId}}{{#isGoSubmodule}}/{{packageName}}{{/isGoSubmodule}}"
+    "github.com/PaesslerAG/jsonpath"
 )
 
 type request struct {
@@ -42,6 +44,8 @@ type feature struct {
 	Request   *request
 	Response  *http.Response
     Context   context.Context
+    PreviousResponse *http.Response
+    PreviousBody    []byte
 }
 
 func (f *feature) createARequestForTheApi(operationId string, classname string) {
@@ -117,6 +121,33 @@ func (f *feature) giveTheParameterAJsonValueOf(param string, val string) {
 
     {{/apiInfo.apis}}
     T.Fail(fmt.Errorf("%s.%s does not have a parameter called %s", f.Request.Classname, f.Request.OperationId, param))
+}
+
+func (f *feature) giveTheParameterIsFromPreviousResponse(parameter, jsonPath string) {
+    if f.PreviousResponse == nil {
+        T.Fail(fmt.Errorf("No previous response exists"))
+        return
+    }
+
+    contentType := f.PreviousResponse.Header.Get("Content-Type")
+    if !strings.Contains(contentType, "application/json") {
+        T.Fail(fmt.Errorf("Previous response is not JSON"))
+        return
+    }
+
+    var data interface{}
+    if err := json.Unmarshal(f.PreviousBody, &data); err != nil {
+        T.Fail(fmt.Errorf("Failed to unmarshal previous response: %v", err))
+        return
+    }
+
+    value, err := jsonpath.Get(jsonPath, data)
+    if err != nil {
+        T.Fail(fmt.Errorf("Failed to evaluate JSON Path: %v", err))
+        return
+    }
+
+    f.Request.Parameters[parameter] = value
 }
 
 func (f *feature) giveTheParameterTheFollowingValues(param string, table *m.Table) {
@@ -207,6 +238,16 @@ func (f *feature) sendTheRequest() {
             }
 
             f.Response = response
+            f.PreviousResponse = response
+            
+            if response.Body != nil {
+                f.PreviousBody, err = io.ReadAll(response.Body)
+                if err != nil {
+                    T.Fail(fmt.Errorf("Failed to read response body: %v", err))
+                    return
+                }
+                response.Body = io.NopCloser(bytes.NewBuffer(f.PreviousBody))
+            }
         }
         {{^-last}}
 
@@ -438,6 +479,8 @@ func init() {
 	feat := &feature {
 		APIClient: {{goImportAlias}}.NewAPIClient(configuration),
         Context: ctx,
+        PreviousResponse: nil,
+        PreviousBody: nil,
 	}
 
     gauge.Step("Create a <operationId> request for the <classname>", feat.createARequestForTheApi)
@@ -445,6 +488,7 @@ func init() {
     gauge.Step("Give the <parameter> parameter a value of <value>", feat.giveTheParameterAValueOf)
     gauge.Step("Give the <parameter> parameter a JSON value of <value>", feat.giveTheParameterAJsonValueOf)
     gauge.Step("Give the <parameter> parameter the following values: <table>", feat.giveTheParameterTheFollowingValues)
+    gauge.Step("the <parameter> parameter is <jsonPath> from the previous response", feat.giveTheParameterIsFromPreviousResponse)
     gauge.Step("Send the request", feat.sendTheRequest)
     gauge.Step("The response status should be <statusCode>", feat.theResponseStatusShouldBe)
     gauge.Step("The response content should be <content>", feat.theResponseContentShouldBe)

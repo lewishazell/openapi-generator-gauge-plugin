@@ -12,6 +12,8 @@ import com.thoughtworks.gauge.TableRow;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -27,6 +29,7 @@ public class StepImplementation {
     private static Gson gson = new Gson();
     private Request request;
     private ApiResponse<?> response;
+    private ApiResponse<?> previousResponse;
     private ApiClient apiClient = new ApiClient();;
 
     public StepImplementation() {
@@ -46,6 +49,7 @@ public class StepImplementation {
         }
 
         apiClient.setBasePath(targetHost);
+        previousResponse = null;
 
         if (accessToken != null)
         {
@@ -205,6 +209,38 @@ public class StepImplementation {
         throw new IllegalArgumentException(request.getClassname() + "." + request.getOperationId() + " does not have a parameter called " + parameter);
     }
 
+    @Step("the <parameter> parameter is <jsonPath> from the previous response")
+    public void theParameterIsFromPreviousResponse(String parameter, String jsonPath) {
+        if (previousResponse == null) {
+            throw new IllegalStateException("No previous response exists.");
+        }
+
+        String contentType = null;
+        if (previousResponse.getHeaders() != null) {
+            contentType = previousResponse.getHeaders().get("Content-Type").stream()
+                .findFirst()
+                .orElse("");
+        }
+
+        if (contentType == null || !contentType.startsWith("application/json")) {
+            throw new IllegalStateException("Previous response is not JSON.");
+        }
+
+        try {
+            String jsonData;
+            if (previousResponse.getData() instanceof String) {
+                jsonData = (String) previousResponse.getData();
+            } else {
+                jsonData = gson.toJson(previousResponse.getData());
+            }
+            
+            Object value = JsonPath.read(jsonData, jsonPath);
+            request.getParameters().put(parameter, value);
+        } catch (PathNotFoundException e) {
+            throw new IllegalStateException("No value found for JSON Path: " + jsonPath, e);
+        }
+    }
+
     @Step("Send the request")
     public void sendTheRequest() throws ApiException {
         {{#apiInfo.apis}}
@@ -215,6 +251,7 @@ public class StepImplementation {
             {{#operation}}
             if ("{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}".equals(request.getOperationId())) {
                 response = api.{{operationId}}WithHttpInfo({{#allParams}}({{{dataType}}})request.getParameters().get("{{baseName}}"){{^-last}}, {{/-last}}{{/allParams}});
+                previousResponse = response;
             }
             {{^-last}}
 

@@ -102,3 +102,16 @@ This scenario ensures that a list response contains at least one pet with specif
 * Send the request
 * The response status should be "200"
 * The response content should contain the subtree: "[{\"name\":\"string\"}]"
+
+## Chain JSON response data to request parameters using JSON Path
+This scenario verifies that a value from a previous response can be chained to a subsequent request using JSON Path.
+
+* Create an "addPet" request for the "DefaultApi"
+    * Give the "PetDetails" parameter a JSON value of "{\"name\": \"Pickle\", \"tag\": \"cat\"}"
+* Send the request
+* The response status should be "200"
+
+* Create a "findPetById" request for the "DefaultApi"
+    * the "id" parameter is "$.id" from the previous response
+* Send the request
+* The response status should be "200"

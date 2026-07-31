@@ -18,6 +18,8 @@ using Shouldly;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
+using Json.Path;
 
 using {{packageName}}.Model;
 using {{packageName}}.Client;
@@ -40,6 +42,7 @@ namespace {{packageName}}.Test
         private Request request;
         private IApiResponse response;
         private Configuration configuration;
+        private IApiResponse previousResponse;
 
         public StepImplementation()
         {
@@ -54,6 +57,8 @@ namespace {{packageName}}.Test
             {
                 throw new InvalidOperationException("Missing required configuration: 'gauge_target_host'. Please set the gauge_target_host environment variable, or pass it at generation time with -p gaugeTargetHost=http://your-api");
             }
+
+            previousResponse = null;
 
             configuration = new Configuration
             {
@@ -211,6 +216,47 @@ namespace {{packageName}}.Test
             throw new InvalidOperationException($"{request.Classname}.{request.OperationId} does not have a parameter called {parameter}");
         }
 
+        [Step("the <parameter> parameter is <jsonPath> from the previous response")]
+        public void TheParameterIsFromPreviousResponse(string parameter, string jsonPath)
+        {
+            if (previousResponse == null)
+            {
+                throw new InvalidOperationException("No previous response exists.");
+            }
+
+            if (!previousResponse.Headers.TryGetValue("Content-Type", out var contentTypeValues) || !contentTypeValues.Any(ct => ct.Contains("application/json")))
+            {
+                throw new InvalidOperationException("Previous response is not JSON.");
+            }
+
+            var json = JsonNode.Parse(previousResponse.RawContent);
+            var path = JsonPath.Parse(jsonPath);
+            var result = path.Evaluate(json);
+
+            if (result == null || !result.Matches.Any())
+            {
+                throw new InvalidOperationException($"No value found for JSON Path: {jsonPath}");
+            }
+
+            var value = result.Matches[0].Value;
+            if (value is JsonValue jsonValue && jsonValue.TryGetValue(out int intValue))
+            {
+                request.Parameters.Set(parameter, (long)intValue);
+            }
+            else if (value is JsonValue jsonValueLong && jsonValueLong.TryGetValue(out long longValue))
+            {
+                request.Parameters.Set(parameter, longValue);
+            }
+            else if (value is JsonValue jsonValueString && jsonValueString.TryGetValue(out string stringValue))
+            {
+                request.Parameters.Set(parameter, stringValue);
+            }
+            else
+            {
+                request.Parameters.Set(parameter, value.ToString());
+            }
+        }
+
         [Step("Send the request")]
         public async Task SendTheRequest()
         {
@@ -224,6 +270,7 @@ namespace {{packageName}}.Test
                 if (request.OperationId == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}")
                 {
                     response = await api.{{operationId}}WithHttpInfoAsync({{#allParams}}request.Parameters.GetOrDefault<{{{dataType}}}>("{{baseName}}"){{^-last}}, {{/-last}}{{/allParams}});
+                    previousResponse = response;
                 }
                 {{^-last}}
 
@@ -260,6 +307,12 @@ namespace {{packageName}}.Test
             {
                 throw new InvalidOperationException($"Cannot assert against unsupported media type: {mediaType?.MediaType}");
             }
+        }
+
+        [AfterScenario]
+        public void AfterScenario()
+        {
+            previousResponse = null;
         }
 
         private class RequestParameters

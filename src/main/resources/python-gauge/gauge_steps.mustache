@@ -9,6 +9,7 @@ import os
 import {{packageName}}
 from typing import TypeVar, List
 from getgauge.python import step, before_scenario, Messages
+from jsonpath_ng import parse
 
 {{#apiInfo.apis}}
 from {{apiPackage}}.{{classFilename}} import {{classname}}
@@ -60,6 +61,7 @@ class TestContext:
         self.api_client = {{packageName}}.ApiClient(configuration)
         self.request = None
         self.response = None
+        self.previous_response = None
 
 test_context = TestContext()
 @step("Create a <operationId> request for the <classname>")
@@ -152,6 +154,39 @@ def give_the_parameter_the_following_values(parameter, table):
 
     raise ValueError(f"{request.classname}.{request.operation_id} does not have a parameter called {parameter}")
 
+@step("the <parameter> parameter is <jsonPath> from the previous response")
+def the_parameter_is_from_previous_response(parameter, jsonPath):
+    if not test_context.previous_response:
+        raise ValueError('No previous response exists.')
+
+    content_type = ""
+    if test_context.previous_response.headers is not None:
+        headers_lower = {k.lower(): v for k, v in test_context.previous_response.headers.items()}
+        content_type = headers_lower.get("content-type", "").lower()
+
+    if "application/json" not in content_type:
+        raise ValueError('Previous response is not JSON.')
+
+    json_data = test_context.previous_response.raw_data
+    if isinstance(json_data, bytes):
+        json_data = json_data.decode('utf-8')
+
+    try:
+        parsed_json = json.loads(json_data)
+    except json.JSONDecodeError:
+        raise ValueError('Failed to parse previous response as JSON')
+
+    match = parse(jsonPath).find(parsed_json)
+
+    if not match:
+        raise ValueError(f'No value found for JSON Path: {jsonPath}')
+
+    test_context.request.parameters[parameter] = match[0].value
+
+@before_scenario
+def before_scenario_hook():
+    test_context.previous_response = None
+
 @step("Send the request")
 def send_the_request():
     request = test_context.request
@@ -164,6 +199,7 @@ def send_the_request():
         {{#operation}}
         if request.operation_id == "{{#lambda.camelcase}}{{operationId}}{{/lambda.camelcase}}":
             test_context.response = api.{{operationId}}_with_http_info({{#allParams}}request.parameters.get("{{baseName}}"){{^-last}}, {{/-last}}{{/allParams}})
+            test_context.previous_response = test_context.response
         {{/operation}}
         {{/operations}}
     {{/apiInfo.apis}}
